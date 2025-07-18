@@ -16,7 +16,7 @@ module.exports = function (app) {
       res.json({
         status: true,
         title: data.title,
-        creator: data.creator,
+        creator: 'RijalGanzz',
         duration: data.duration,
         thumbnail: data.thumbnail,
         type: data.type,
@@ -43,7 +43,7 @@ module.exports = function (app) {
       res.json({
         status: true,
         title: data.title,
-        creator: data.creator,
+        creator: 'RijalGanzz',
         duration: data.duration,
         thumbnail: data.thumbnail,
         type: data.type,
