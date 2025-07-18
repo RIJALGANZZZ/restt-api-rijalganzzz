@@ -1,6 +1,6 @@
 {
   "name": "Rest Api RijalGanzz",
-  "version": "v1.0.2",
+  "version": "v1.0.3",
   "description": "Rijal Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
@@ -31,6 +31,15 @@
           "params": {
             "text": "Teks atau perintah untuk chat AI",
             "model": "1See the list of supported AI models here: https://mind.hydrooo.web.id"
+          }
+        },
+        {
+          "name": "Openai",
+          "desc": "Openai chat",
+          "status": "Active",
+          "path": "/ai/openai?text=",
+          "params": {
+            "text": "Teks yang akan dikirim ke AI"
           }
         }
       ]
