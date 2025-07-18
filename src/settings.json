@@ -32,15 +32,6 @@
             "text": "Teks atau perintah untuk chat AI",
             "model": "1See the list of supported AI models here: https://mind.hydrooo.web.id"
           }
-        },
-        {
-          "name": "Openai",
-          "desc": "Openai chat",
-          "status": "Active",
-          "path": "/ai/openai?text=",
-          "params": {
-            "text": "Teks yang akan dikirim ke AI"
-          }
         }
       ]
     },
@@ -66,6 +57,24 @@
           "params": {
             "q": "Search query"
           }
+        },
+        {
+          "name": "Ytmp4",
+          "desc": "Downloader Youtube mp4",
+          "status": "ready",
+          "path": "/search/ytmp4?url=",
+          "params": {
+            "url": "URL video Youtube"
+          }
+        },
+        {
+          "name": "Ytmp3",
+          "desc": "Downloader Youtube mp3",
+          "status": "ready",
+          "path": "/search/ytmp3?url=",
+          "params": {
+            "url": "URL video Youtube"
+          }
         }
       ]
     },
@@ -79,15 +88,6 @@
           "path": "/imagecreator/brat?text=",
           "params": {
             "text": "Teks yang akan dimasukkan ke dalam gambar brat"
-          }
-        },
-        {
-          "name": "Screenshot Web",
-          "desc": "Screenshot web url",
-          "status": "ready",
-          "path": "/tools/ssweb?url=",
-          "params": {
-            "url": "URL dari website yang ingin di-screenshot"
           }
         }
       ]
