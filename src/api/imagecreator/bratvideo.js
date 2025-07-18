@@ -6,18 +6,19 @@ module.exports = function app(app) {
       const { text } = req.query
       if (!text) return res.json({ status: false, error: 'Parameter text wajib diisi' })
 
-      const url = `https://zenz.biz.id/maker/bratvid?text=${encodeURIComponent(text)}`
-      const response = await fetch(url)
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status} - ${await response.text()}`)
+      const apiRes = await fetch(`https://zenz.biz.id/maker/bratvid?text=${encodeURIComponent(text)}`)
+      const json = await apiRes.json()
+      if (!json.status || !json.result) {
+        return res.json({ status: false, error: 'Gagal ambil video dari zenz' })
+      }
 
-      const buffer = await response.buffer()
-      res.writeHead(200, {
-        'Content-Type': 'video/mp4',
-        'Content-Length': buffer.length
+      res.json({
+        status: true,
+        creator: 'RijalGanzz',
+        result: json.result
       })
-      res.end(buffer)
-    } catch (error) {
-      res.status(500).send(`Error: ${error.message}`)
+    } catch (err) {
+      res.status(500).json({ status: false, error: err.message })
     }
   })
 }
