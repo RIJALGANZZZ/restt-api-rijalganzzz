@@ -11,8 +11,8 @@ module.exports = function (app) {
       });
       res.setHeader('Content-Type', 'image/png');
       res.send(image.data);
-    } catch {
-      res.status(500).json({ status: false, message: 'Failed to fetch brat image' });
+    } catch (err) {
+      res.status(500).json({ status: false, message: 'Failed to fetch brat image', error: err.message });
     }
   });
 
@@ -21,16 +21,19 @@ module.exports = function (app) {
     if (!text) return res.status(400).json({ status: false, message: 'text parameter is required' });
 
     try {
-      const { data } = await axios.get(`https://zenz.biz.id/maker/bratvid?text=${encodeURIComponent(text)}`);
+      const response = await axios.get(`https://zenz.biz.id/maker/bratvid?text=${encodeURIComponent(text)}`);
+      const data = response?.data;
 
-      if (!data || !data.video_url) {
+      const videoUrl = data?.result?.video_url || data?.video_url;
+      if (!videoUrl) {
         return res.status(500).json({
           status: false,
-          message: 'No video_url found from provider'
+          message: 'No video_url found from provider',
+          responseData: data
         });
       }
 
-      const video = await axios.get(data.video_url, { responseType: 'arraybuffer' });
+      const video = await axios.get(videoUrl, { responseType: 'arraybuffer' });
       res.setHeader('Content-Type', 'video/mp4');
       res.send(video.data);
     } catch (e) {
