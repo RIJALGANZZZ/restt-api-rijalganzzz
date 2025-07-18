@@ -1,7 +1,7 @@
-const fetch = require('node-fetch');
+const fetch = require('node-fetch')
 
 module.exports = function(app) {
-  const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "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";
+  const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "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"
 
   async function OpenAi(teks) {
     try {
@@ -22,40 +22,33 @@ module.exports = function(app) {
             }
           ]
         })
-      });
+      })
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! Status: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-
+      const data = await response.json()
       if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error("Invalid response format from OpenRouter");
+        throw new Error("Invalid response from OpenAI API")
       }
-
-      return data.choices[0].message.content.trim();
+      return data.choices[0].message.content.trim()
     } catch (err) {
-      throw new Error("Failed to fetch from OpenAI: " + err.message);
+      throw new Error("Failed to fetch from OpenAI API: " + err.message)
     }
   }
 
   app.get('/ai/openai', async (req, res) => {
-    const { text } = req.query;
+    const { text } = req.query
 
     if (!text) {
-      return res.json({ status: false, error: 'Text is required' });
+      return res.json({ status: false, error: 'Text is required' })
     }
 
     try {
-      const result = await OpenAi(text);
+      const result = await OpenAi(text)
       res.status(200).json({
         status: true,
         result
-      });
+      })
     } catch (error) {
-      res.status(500).json({ status: false, error: error.message });
+      res.status(500).json({ status: false, error: error.message })
     }
-  });
-};
+  })
+          }
