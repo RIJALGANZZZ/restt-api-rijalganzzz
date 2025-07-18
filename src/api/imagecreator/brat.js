@@ -33,7 +33,7 @@ module.exports = function (app) {
         });
       }
 
-      const video = await axios.get(data.video_url, { responseType: 'arraybuffer' });
+      const video = await axios.get(data.result.url, { responseType: 'arraybuffer' });
       res.setHeader('Content-Type', 'video/mp4');
       res.send(video.data);
     } catch (e) {
