@@ -1,41 +1,57 @@
 module.exports = function (app) {
+  const fetch = require('node-fetch')
 
-app.get('/search/ytmp3', async (req, res) => {
+  app.get('/search/ytmp3', async (req, res) => {
     try {
-        const { url } = req.query
-        if (!url) return res.json({ status: false, error: 'Url is required' })
+      const { url } = req.query
+      if (!url) return res.json({ status: false, message: 'Url is required' })
 
-        const results = await global.fetchJson(`https://zenz.biz.id/downloader/ytmp3?url=${encodeURIComponent(url)}`)
+      const response = await fetch(`https://zenz.biz.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      })
 
-        res.status(200).json({
-            status: true,
-            title: results.title,
-            duration: results.duration,
-            thumbnail: results.thumbnail,
-            format: results.format,
-            type: results.type,
-            download_url: results.download_url,
-            creator: results.creator
-        })
-    } catch (error) {
-        res.status(500).send(`Error: ${error.message}`)
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
+
+      const data = await response.json()
+      res.json({
+        status: true,
+        title: data.title,
+        creator: data.creator,
+        duration: data.duration,
+        thumbnail: data.thumbnail,
+        type: data.type,
+        format: data.format,
+        download_url: data.download_url
+      })
+    } catch (e) {
+      res.status(500).json({ status: false, message: e.message })
     }
-})
+  })
 
-app.get('/search/ytmp4', async (req, res) => {
+  app.get('/search/ytmp4', async (req, res) => {
     try {
-        const { url } = req.query
-        if (!url) return res.json({ status: false, error: 'Url is required' })
+      const { url } = req.query
+      if (!url) return res.json({ status: false, message: 'Url is required' })
 
-        const results = await global.fetchJson(`https://fastrestapis.fasturl.cloud/downup/ytmp4?url=${url}&quality=720&server=auto`)
+      const response = await fetch(`https://zenz.biz.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      })
 
-        res.status(200).json({
-            status: true,
-            result: results.result
-        })
-    } catch (error) {
-        res.status(500).send(`Error: ${error.message}`)
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
+
+      const data = await response.json()
+      res.json({
+        status: true,
+        title: data.title,
+        creator: data.creator,
+        duration: data.duration,
+        thumbnail: data.thumbnail,
+        type: data.type,
+        quality: data.quality,
+        download_url: data.download_url
+      })
+    } catch (e) {
+      res.status(500).json({ status: false, message: e.message })
     }
-})
-
-}
+  })
+            }
