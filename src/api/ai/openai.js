@@ -24,16 +24,20 @@ module.exports = function(app) {
         })
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! Status: ${response.status} - ${errorText}`);
+      }
+
       const data = await response.json();
 
       if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error("Invalid response from Deepseek API");
+        throw new Error("Invalid response format from OpenRouter");
       }
 
       return data.choices[0].message.content.trim();
-
     } catch (err) {
-      throw new Error("Failed to fetch from Deepseek API: " + err.message);
+      throw new Error("Failed to fetch from OpenAI: " + err.message);
     }
   }
 
