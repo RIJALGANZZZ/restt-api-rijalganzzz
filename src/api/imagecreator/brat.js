@@ -1,5 +1,4 @@
 const axios = require('axios');
-const https = require('https');
 
 module.exports = function (app) {
   app.get('/imagecreator/brat', async (req, res) => {
@@ -22,20 +21,16 @@ module.exports = function (app) {
     if (!text) return res.status(400).json({ status: false, message: 'text parameter is required' });
 
     try {
-      const { data } = await axios.get(`https://zenz.biz.id/maker/bratvid?text=${encodeURIComponent(text)}`, {
-        timeout: 10000,
-        httpsAgent: new https.Agent({ rejectUnauthorized: false })
-      });
+      const { data } = await axios.get(`https://zenz.biz.id/maker/bratvid?text=${encodeURIComponent(text)}`);
 
-      const videoUrl = data?.result?.video_url || data?.video_url;
-      if (!videoUrl) return res.status(500).json({ status: false, message: 'No video_url found' });
+      if (!data || !data.video_url) {
+        return res.status(500).json({
+          status: false,
+          message: 'No video_url found from provider'
+        });
+      }
 
-      const video = await axios.get(videoUrl, {
-        responseType: 'arraybuffer',
-        timeout: 20000,
-        httpsAgent: new https.Agent({ rejectUnauthorized: false })
-      });
-
+      const video = await axios.get(data.video_url, { responseType: 'arraybuffer' });
       res.setHeader('Content-Type', 'video/mp4');
       res.send(video.data);
     } catch (e) {
