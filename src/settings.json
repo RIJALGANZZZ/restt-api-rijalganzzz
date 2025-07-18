@@ -1,6 +1,6 @@
 {
   "name": "Rest Api RijalGanzz",
-  "version": "v1.0.1",
+  "version": "v1.0.2",
   "description": "Rijal Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
@@ -61,7 +61,7 @@
       ]
     },
     {
-      "name": "Brat",
+      "name": "Maker",
       "items": [
         {
           "name": "Brat",
@@ -73,12 +73,12 @@
           }
         },
         {
-          "name": "Brat Video",
-          "desc": "Membuat bratvid anomali",
+          "name": "Screenshot Web",
+          "desc": "Screenshot web url",
           "status": "ready",
-          "path": "/imagecreator/bratvideo?text=",
+          "path": "/tools/ssweb?url=",
           "params": {
-            "text": "Teks yang akan dimasukkan ke dalam video brat"
+            "url": "URL dari website yang ingin di-screenshot"
           }
         }
       ]
