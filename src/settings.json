@@ -1,6 +1,6 @@
 {
   "name": "Rest Api RijalGanzz",
-  "version": "v1.0.5",
+  "version": "v1.0.7",
   "description": "Rijal Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
@@ -88,6 +88,15 @@
           "path": "/imagecreator/brat?text=",
           "params": {
             "text": "Teks yang akan dimasukkan ke dalam gambar brat"
+          }
+        },
+        {
+          "name": "Brat Video",
+          "desc": "Membuat video brat bergerak dari teks",
+          "status": "ready",
+          "path": "/imagecreator/bratvideo?text=",
+          "params": {
+            "text": "Teks yang akan dimasukkan ke dalam video brat"
           }
         }
       ]
