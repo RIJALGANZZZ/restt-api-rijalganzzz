@@ -2,24 +2,24 @@ const fetch = require('node-fetch')
 const cheerio = require('cheerio')
 
 module.exports = async (req, res) => {
-  const { judul } = req.query
-  if (!judul) return res.status(400).json({ status: false, message: 'Masukkan judul lagu di query ?judul=' })
-
   try {
-    const search = await fetch(`https://genius.com/api/search/multi?per_page=1&q=${encodeURIComponent(judul)}`)
-    const json = await search.json()
+    const { judul } = req.query
+    if (!judul) return res.status(400).json({ status: false, message: 'Masukkan judul lagu di query ?judul=' })
 
-    const song = json.response.sections
+    const searchRes = await fetch(`https://genius.com/api/search/multi?per_page=1&q=${encodeURIComponent(judul)}`)
+    const searchJson = await searchRes.json()
+
+    const song = searchJson.response.sections
       .flatMap(section => section.hits)
       .find(hit => hit.type === 'song')
 
     if (!song) return res.status(404).json({ status: false, message: 'Lagu tidak ditemukan' })
 
-    const html = await fetch(song.result.url).then(r => r.text())
-    const $ = cheerio.load(html)
+    const pageHtml = await fetch(song.result.url).then(r => r.text())
+    const $ = cheerio.load(pageHtml)
     const lyrics = $('div[data-lyrics-container="true"]').text().trim()
 
-    res.status(200).json({
+    res.json({
       status: true,
       creator: 'RijalGanzz',
       result: {
@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
         lyrics
       }
     })
-  } catch (err) {
-    res.status(500).json({ status: false, message: 'Gagal mengambil lirik', error: err.message })
+  } catch (e) {
+    res.status(500).json({ status: false, message: 'Gagal mengambil lirik', error: e.message })
   }
-                          }
+  }
