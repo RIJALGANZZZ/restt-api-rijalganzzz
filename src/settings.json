@@ -47,7 +47,7 @@
         {
           "name": "Random NSFW",
           "desc": "Nsfw contoh (neko)",
-          "path": "/random/nsfw",
+          "path": "/random/random-nsfw",
           "status": "ready"
         }
       ]
