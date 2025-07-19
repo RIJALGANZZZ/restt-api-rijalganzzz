@@ -57,24 +57,6 @@
           "params": {
             "q": "Search query"
           }
-        },
-        {
-          "name": "Ytmp4",
-          "desc": "Downloader Youtube mp4",
-          "status": "ready",
-          "path": "/search/ytmp4?url=",
-          "params": {
-            "url": "URL video Youtube"
-          }
-        },
-        {
-          "name": "Ytmp3",
-          "desc": "Downloader Youtube mp3",
-          "status": "ready",
-          "path": "/search/ytmp3?url=",
-          "params": {
-            "url": "URL video Youtube"
-          }
         }
       ]
     },
@@ -121,8 +103,26 @@
           "params": {
             "url": "URL file Mediafire"
           }
+        },
+        {
+          "name": "Ytmp4",
+          "desc": "Downloader Youtube mp4",
+          "status": "ready",
+          "path": "/search/ytmp4?url=",
+          "params": {
+            "url": "URL video Youtube"
+          }
+        },
+        {
+          "name": "Ytmp3",
+          "desc": "Downloader Youtube mp3",
+          "status": "ready",
+          "path": "/search/ytmp3?url=",
+          "params": {
+            "url": "URL video Youtube"
+          }
         }
       ]
     }
   ]
-}
+        }
