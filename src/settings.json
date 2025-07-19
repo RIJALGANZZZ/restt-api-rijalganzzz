@@ -112,8 +112,17 @@
           "params": {
             "url": "URL video TikTok"
           }
+        },
+        {
+          "name": "Mediafire",
+          "desc": "Download file dari Mediafire",
+          "status": "ready",
+          "path": "/random/mediafire?url=",
+          "params": {
+            "url": "URL file Mediafire"
+          }
         }
       ]
     }
   ]
-        }
+}
