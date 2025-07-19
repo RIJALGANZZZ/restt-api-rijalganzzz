@@ -1,11 +1,13 @@
+const fetch = require('node-fetch')
+
 module.exports = function(app) {
     async function anim() {
         try {
-            let type = ["blowjob", "neko", "trap", "waifu"]
-            let rn = type[Math.floor(Math.random() * type.length)]
-            const data = await fetchJson(`https://api.waifu.pics/nsfw/${rn}`)
-            const response = await getBuffer(data.url)
-            return response
+            const type = ["blowjob", "neko", "trap", "waifu"]
+            const rn = type[Math.floor(Math.random() * type.length)]
+            const data = await fetch(`https://api.waifu.pics/nsfw/${rn}`).then(res => res.json())
+            const imageBuffer = await fetch(data.url).then(res => res.buffer())
+            return imageBuffer
         } catch (error) {
             throw error
         }
@@ -13,14 +15,14 @@ module.exports = function(app) {
 
     app.get('/random/nsfw', async (req, res) => {
         try {
-            const pedo = await anim()
+            const image = await anim()
             res.writeHead(200, {
                 'Content-Type': 'image/png',
-                'Content-Length': pedo.length
+                'Content-Length': image.length
             })
-            res.end(pedo)
+            res.end(image)
         } catch (error) {
             res.status(500).send(`Error: ${error.message}`)
         }
     })
-              }
+}
