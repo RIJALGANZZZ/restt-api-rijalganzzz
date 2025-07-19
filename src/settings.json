@@ -106,7 +106,7 @@
       "items": [
         {
           "name": "Download TikTok",
-          "desc": "Download video TikTok tanpa watermark",
+          "desc": "Download Tiktok Tanpa Wm",
           "status": "ready",
           "path": "/random/tiktok?url=",
           "params": {
