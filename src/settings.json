@@ -92,7 +92,7 @@
         },
         {
           "name": "Brat Video",
-          "desc": "Membuat video brat bergerak dari teks",
+          "desc": "Membuatbratvideo anomali",
           "status": "ready",
           "path": "/imagecreator/bratvideo?text=",
           "params": {
