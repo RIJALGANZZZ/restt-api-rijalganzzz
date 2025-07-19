@@ -1,6 +1,6 @@
 {
   "name": "Rest Api RijalGanzz",
-  "version": "v1.12",
+  "version": "v1.14",
   "description": "Welcome Rijalganzz Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
@@ -65,6 +65,15 @@
           "status": "ready",
           "params": {
             "q": "Masukan nama video tiktok"
+          }
+        },
+        {
+          "name": "Lirik Lagu",
+          "desc": "Cari lirik lagu dari genius.com",
+          "path": "/random/lirik?judul=",
+          "status": "ready",
+          "params": {
+            "judul": "Judul lagu yang ingin dicari liriknya"
           }
         }
       ]
@@ -134,4 +143,4 @@
       ]
     }
   ]
-        }
+    }
