@@ -1,6 +1,6 @@
 {
   "name": "Rest Api RijalGanzz",
-  "version": "v1.11",
+  "version": "v1.12",
   "description": "Welcome Rijalganzz Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
@@ -56,6 +56,15 @@
           "status": "ready",
           "params": {
             "q": "Search query"
+          }
+        },
+        {
+          "name": "tiktoksearch",
+          "desc": "Cari video TikTok",
+          "path": "/search/tiktoksearch?q=",
+          "status": "ready",
+          "params": {
+            "q": "Masukan nama video tiktok"
           }
         }
       ]
