@@ -6,20 +6,19 @@ module.exports = function(app) {
       const { url } = req.query
       if (!url) return res.json({ status: false, error: "Url is required" })
 
-      const response = await axios.get(`https://izumi-apis.zone.id/downloader/tiktokdl?url=${encodeURIComponent(url)}`)
-      
-      // pastikan response sukses
-      if (!response.data || !response.data.result) {
-        return res.status(500).json({ status: false, error: "Invalid response from API" })
+      const { data } = await axios.get(`https://izumi-apis.zone.id/downloader/tiktokdl?url=${encodeURIComponent(url)}`)
+
+      if (!data || !data.result) {
+        return res.status(500).json({ status: false, error: "Invalid response from upstream API" })
       }
 
       res.status(200).json({
         status: true,
         creator: "RijalGanzz",
-        result: response.data.result
+        result: data.result
       })
     } catch (error) {
-      res.status(500).send(`Error: ${error.message}`)
+      res.status(500).json({ status: false, error: error.message })
     }
   })
 }
