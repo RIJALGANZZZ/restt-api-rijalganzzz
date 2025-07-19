@@ -7,6 +7,12 @@ module.exports = function(app) {
       if (!url) return res.json({ status: false, error: "Url is required" })
 
       const response = await axios.get(`https://izumi-apis.zone.id/downloader/tiktokdl?url=${encodeURIComponent(url)}`)
+      
+      // pastikan response sukses
+      if (!response.data || !response.data.result) {
+        return res.status(500).json({ status: false, error: "Invalid response from API" })
+      }
+
       res.status(200).json({
         status: true,
         creator: "RijalGanzz",
