@@ -61,7 +61,7 @@
         {
           "name": "tiktoksearch",
           "desc": "Cari video TikTok",
-          "path": "/search/tiktoksearch?q=",
+          "path": "/search/tiktok?q=",
           "status": "ready",
           "params": {
             "q": "Masukan nama video tiktok"
