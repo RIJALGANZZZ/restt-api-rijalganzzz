@@ -1,7 +1,7 @@
 {
   "name": "Rest Api RijalGanzz",
-  "version": "v1.0.8",
-  "description": "Gatau Jir",
+  "version": "v1.0.9",
+  "description": "Welcome Rijalganzz Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
     "status": "Online!"
@@ -100,6 +100,20 @@
           }
         }
       ]
+    },
+    {
+      "name": "Download",
+      "items": [
+        {
+          "name": "Download TikTok",
+          "desc": "Download video TikTok tanpa watermark",
+          "status": "ready",
+          "path": "/random/tiktok?url=",
+          "params": {
+            "url": "URL video TikTok"
+          }
+        }
+      ]
     }
   ]
-}
+        }
