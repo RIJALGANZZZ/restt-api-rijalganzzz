@@ -92,7 +92,7 @@
         },
         {
           "name": "Brat Video",
-          "desc": "Membuatbratvideo anomali",
+          "desc": "Membuat bratvideo anomali",
           "status": "ready",
           "path": "/imagecreator/bratvideo?text=",
           "params": {
