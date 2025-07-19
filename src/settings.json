@@ -1,6 +1,6 @@
 {
   "name": "Rest Api RijalGanzz",
-  "version": "v1.14",
+  "version": "v1.15",
   "description": "Welcome Rijalganzz Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
@@ -43,6 +43,12 @@
           "desc": "Blue Archive Random Images",
           "path": "/random/ba",
           "status": "ready"
+        },
+        {
+          "name": "Random NSFW",
+          "desc": "Nsfw contoh (neko)",
+          "path": "/random/nsfw",
+          "status": "ready"
         }
       ]
     },
@@ -59,21 +65,12 @@
           }
         },
         {
-          "name": "tiktoksearch",
+          "name": "TikTokSearch",
           "desc": "Cari video TikTok",
           "path": "/search/tiktok?q=",
           "status": "ready",
           "params": {
             "q": "Masukan nama video tiktok"
-          }
-        },
-        {
-          "name": "Lirik Lagu",
-          "desc": "Cari lirik lagu dari genius.com",
-          "path": "/random/lirik?judul=",
-          "status": "ready",
-          "params": {
-            "judul": "Judul lagu yang ingin dicari liriknya"
           }
         }
       ]
@@ -143,4 +140,4 @@
       ]
     }
   ]
-    }
+        }
