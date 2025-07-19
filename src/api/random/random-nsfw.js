@@ -5,15 +5,23 @@ module.exports = function(app) {
         try {
             const type = ["blowjob", "neko", "trap", "waifu"]
             const rn = type[Math.floor(Math.random() * type.length)]
-            const data = await fetch(`https://api.waifu.pics/nsfw/${rn}`).then(res => res.json())
-            const imageBuffer = await fetch(data.url).then(res => res.buffer())
+            const response = await fetch(`https://api.waifu.pics/nsfw/${rn}`)
+
+            if (!response.ok) throw new Error(`API error! Status: ${response.status}`)
+
+            const data = await response.json()
+
+            const imgRes = await fetch(data.url)
+            if (!imgRes.ok) throw new Error(`Image fetch error! Status: ${imgRes.status}`)
+
+            const imageBuffer = await imgRes.buffer()
             return imageBuffer
-        } catch (error) {
-            throw error
+        } catch (err) {
+            throw err
         }
     }
 
-    app.get('/random/nsfw', async (req, res) => {
+    app.get('/random/random-nsfw', async (req, res) => {
         try {
             const image = await anim()
             res.writeHead(200, {
@@ -21,8 +29,9 @@ module.exports = function(app) {
                 'Content-Length': image.length
             })
             res.end(image)
-        } catch (error) {
-            res.status(500).send(`Error: ${error.message}`)
+        } catch (err) {
+            console.error(err)
+            res.status(500).json({ status: false, message: err.message })
         }
     })
-}
+                }
