@@ -46,9 +46,9 @@
         },
         {
           "name": "Emoji Mix",
-          "desc": "Emoji mix converter",
-          "status": "Active",
-          "path": "/tools/emojimix?emoji1=&emoji2=",
+          "desc": "Gabungkan Emoji",
+          "status": "ready",
+          "path": "/random/emojimix?emoji1=&emoji2=",
           "params": {
             "emoji1": "Emoji pertama",
             "emoji2": "Emoji kedua"
