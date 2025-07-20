@@ -21,7 +21,7 @@ async function npmstalk(packageName) {
 }
 
 module.exports = function (app) {
-  app.get('/stalk/npm', async (req, res) => {
+  app.get('/stalk/npmstalk', async (req, res) => {
     const { name } = req.query
     if (!name) return res.json({ status: false, error: 'Name is required' })
     try {
