@@ -7,8 +7,7 @@
     "status": "Online!"
   },
   "apiSettings": {
-    "creator": "RijalGanzz",
-    "apikey": ["ELAINA MD"]
+    "creator": "RijalGanzz"
   },
   "categories": [
     {
@@ -114,12 +113,6 @@
           "params": {
             "text": "Teks yang akan dimasukkan ke dalam video brat"
           }
-        },
-        {
-          "name": "Stock Blox Fruit",
-          "desc": "Menampilkan stock Blox Fruit dari fruityblox.com",
-          "status": "ready",
-          "path": "/imagecreator/stockfruit"
         }
       ]
     },
@@ -165,8 +158,55 @@
         {
           "name": "Gitclone",
           "desc": "Downloader gitclone",
-          "status": "Active",
+          "status": "ready",
           "path": "/download/github?url="
+        }
+      ]
+    },
+    {
+      "name": "Stalker",
+      "items": [
+        {
+          "name": "Instagram Stalk",
+          "desc": "Stalk instagram account",
+          "status": "ready",
+          "path": "/stalk/instagram?username="
+        },
+        {
+          "name": "Telegram Stalk",
+          "desc": "Stalk telegram account",
+          "status": "ready",
+          "path": "/stalk/telegram?username="
+        },
+        {
+          "name": "Youtube Stalk",
+          "desc": "Stalk youtube account",
+          "status": "ready",
+          "path": "/stalk/youtube?username="
+        },
+        {
+          "name": "Tiktok Stalk",
+          "desc": "Stalk tiktok account",
+          "status": "ready",
+          "path": "/stalk/tiktok?username="
+        },
+        {
+          "name": "Github Stalk",
+          "desc": "Stalk github account",
+          "status": "ready",
+          "path": "/stalk/github?username="
+        },
+        {
+          "name": "Npm Stalk",
+          "desc": "Stalk npm package",
+          "status": "ready",
+          "path": "/stalk/npm?name="
+        },
+        {
+          "name": "FF Stalk",
+          "desc": "Stalk free fire account",
+          "status": "ready",
+          "path": "/stalk/ff?id="
         }
       ]
     }
