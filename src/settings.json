@@ -108,7 +108,7 @@
           "name": "Download TikTok",
           "desc": "Download Tiktok Tanpa Wm",
           "status": "ready",
-          "path": "/random/tiktok?url=",
+          "path": "/download/tiktok?url=",
           "params": {
             "url": "URL video TikTok"
           }
@@ -117,7 +117,7 @@
           "name": "Mediafire",
           "desc": "Download file dari Mediafire",
           "status": "ready",
-          "path": "/random/mediafire?url=",
+          "path": "/download/mediafire?url=",
           "params": {
             "url": "URL file Mediafire"
           }
@@ -126,7 +126,7 @@
           "name": "Ytmp4",
           "desc": "Downloader Youtube mp4",
           "status": "ready",
-          "path": "/search/ytmp4?url=",
+          "path": "/download/ytmp4?url=",
           "params": {
             "url": "URL video Youtube"
           }
@@ -135,7 +135,7 @@
           "name": "Ytmp3",
           "desc": "Downloader Youtube mp3",
           "status": "ready",
-          "path": "/search/ytmp3?url=",
+          "path": "/download/ytmp3?url=",
           "params": {
             "url": "URL video Youtube"
           }
@@ -143,4 +143,4 @@
       ]
     }
   ]
-    }
+          }
