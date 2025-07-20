@@ -85,6 +85,12 @@
           "params": {
             "q": "Masukan nama video tiktok"
           }
+        },
+        {
+          "name": "Info Gempa",
+          "desc": "Menampilkan info gempa di seluruh dunia",
+          "path": "/search/gempa",
+          "status": "ready"
         }
       ]
     },
@@ -159,4 +165,4 @@
       ]
     }
   ]
-    }
+        }
