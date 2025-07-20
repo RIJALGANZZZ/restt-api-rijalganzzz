@@ -114,6 +114,12 @@
           "params": {
             "text": "Teks yang akan dimasukkan ke dalam video brat"
           }
+        },
+        {
+          "name": "Stock Blox Fruit",
+          "desc": "Menampilkan stock Blox Fruit dari fruityblox.com",
+          "status": "ready",
+          "path": "/imagecreator/stockfruit"
         }
       ]
     },
