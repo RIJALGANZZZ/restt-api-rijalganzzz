@@ -32,6 +32,15 @@
             "text": "Teks atau perintah untuk chat AI",
             "model": "1See the list of supported AI models here: https://mind.hydrooo.web.id"
           }
+        },
+        {
+          "name": "Gpt4o",
+          "desc": "Chat dengan gpt4o AI.",
+          "path": "/ai/gpt4o?prompt=",
+          "status": "ready",
+          "params": {
+            "prompt": "Pertanyaan atau instruksi untuk GPT-4o"
+          }
         }
       ]
     },
@@ -150,4 +159,4 @@
       ]
     }
   ]
-        }
+    }
