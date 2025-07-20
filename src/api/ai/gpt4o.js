@@ -7,7 +7,7 @@ module.exports = function(app) {
       if (!prompt) return res.status(400).json({ error: "Prompt is required" });
 
       const lowerPrompt = prompt.toLowerCase();
-      const isCreatorQuestion = /siapa\s+(yang\s+)?(membuatmu|penciptamu|creatormu|pembuat\s+kamu)/.test(lowerPrompt);
+      const isCreatorQuestion = /(siapa.*(buat|cipt|develop|pengembang)|kamu.*(dibuat|diciptakan)).*/.test(lowerPrompt);
 
       if (isCreatorQuestion) {
         return res.json({
@@ -41,4 +41,4 @@ module.exports = function(app) {
       res.status(500).json({ error: error.name === 'AbortError' ? 'Request timeout' : error.message });
     }
   });
-          }
+}
