@@ -200,7 +200,7 @@
           "name": "Npm Stalk",
           "desc": "Stalk npm package",
           "status": "ready",
-          "path": "/stalk/npm?name="
+          "path": "/stalk/npmstalk?name="
         },
         {
           "name": "FF Stalk",
