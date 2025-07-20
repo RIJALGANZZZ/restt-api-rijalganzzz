@@ -1,6 +1,6 @@
 {
   "name": "Rest Api RijalGanzz",
-  "version": "v1.14",
+  "version": "v1.15",
   "description": "Welcome Rijalganzz Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
@@ -43,6 +43,16 @@
           "desc": "Blue Archive Random Images",
           "path": "/random/ba",
           "status": "ready"
+        },
+        {
+          "name": "Emoji Mix",
+          "desc": "Emoji mix converter",
+          "status": "Active",
+          "path": "/tools/emojimix?emoji1=&emoji2=",
+          "params": {
+            "emoji1": "Emoji pertama",
+            "emoji2": "Emoji kedua"
+          }
         }
       ]
     },
