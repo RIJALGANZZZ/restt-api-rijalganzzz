@@ -66,15 +66,6 @@
           "params": {
             "q": "Masukan nama video tiktok"
           }
-        },
-        {
-          "name": "Lirik Lagu",
-          "desc": "Cari lirik lagu dari genius.com",
-          "path": "/random/lirik?judul=",
-          "status": "ready",
-          "params": {
-            "judul": "Judul lagu yang ingin dicari liriknya"
-          }
         }
       ]
     },
@@ -139,8 +130,14 @@
           "params": {
             "url": "URL video Youtube"
           }
+        },
+        {
+          "name": "Gitclone",
+          "desc": "Downloader gitclone",
+          "status": "Active",
+          "path": "/download/github?url="
         }
       ]
     }
   ]
-          }
+        }
