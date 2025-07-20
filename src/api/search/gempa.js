@@ -18,16 +18,25 @@ module.exports = function(app) {
         return await res.text()
     }
 
+    async function fetchShakemap(url) {
+        try {
+            const imgRes = await fetch(url)
+            if (!imgRes.ok) return null
+            return await imgRes.buffer()
+        } catch {
+            return null
+        }
+    }
+
     app.get('/search/gempa', async (req, res) => {
         try {
             const data = await getGempaData()
-            const imgUrl = 'https://data.bmkg.go.id/DataMKG/TEWS/' + data.Infogempa.gempa.Shakemap
+            const shakemapPath = data?.Infogempa?.gempa?.Shakemap
+            const shakemapUrl = `https://data.bmkg.go.id/DataMKG/TEWS/${shakemapPath}`
+            const buffer = await fetchShakemap(shakemapUrl)
 
-            const imgRes = await fetch(imgUrl)
-            if (!imgRes.ok) throw new Error('Image fetch error!')
-            const buffer = await imgRes.buffer()
-
-            const catboxUrl = await uploadToCatbox(buffer)
+            let catboxUrl = null
+            if (buffer) catboxUrl = await uploadToCatbox(buffer)
 
             res.json({
                 status: true,
@@ -40,11 +49,11 @@ module.exports = function(app) {
                     kedalaman: data.Infogempa.gempa.Kedalaman,
                     koordinat: data.Infogempa.gempa.Coordinates,
                     potensi: data.Infogempa.gempa.Potensi,
-                    shakemap: catboxUrl
+                    shakemap: catboxUrl || 'Shakemap tidak tersedia'
                 }
             })
         } catch (err) {
             res.status(500).json({ status: false, message: err.message })
         }
     })
-                }
+}
