@@ -114,7 +114,7 @@
 
     <footer class="main-footer" role="contentinfo">
       <div class="footer-content">
-        <div id="wm" class="copyright">&copy; 2025 RijalGanzz Semua hak dilindungi.</div>
+        <div id="wm" class="copyright">&copy; 2025 RijalGanzz. Semua hak dilindungi.</div>
         <div class="footer-middle">
           <div class="theme-switcher">
             <span>Terang</span>
@@ -133,11 +133,9 @@
             <i class="fas fa-envelope" aria-hidden="true"></i> Kontak
           </a>
         </nav>
-
-        <!-- Kontrol Musik -->
-        <div class="music-player mt-4 text-center">
+        <div class="music-player text-center mt-4">
           <video id="bgMusic" src="https://files.catbox.moe/6f5ce1.mp4" type="video/mp4" preload="auto" style="display: none;"></video>
-          <div class="btn-group" role="group" aria-label="Kontrol Musik">
+          <div class="btn-group mt-2" role="group" aria-label="Kontrol Musik">
             <button id="playMusic" class="btn btn-success" aria-label="Putar Musik">
               <i class="fas fa-play-circle fa-lg"></i>
             </button>
@@ -149,72 +147,8 @@
             </button>
           </div>
         </div>
-
       </div>
     </footer>
-  </div>
-
-  <div class="modal fade" id="apiResponseModal" tabindex="-1" aria-labelledby="apiResponseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" id="modalDialog" role="document">
-      <div class="modal-content">
-        <header class="modal-header">
-          <div>
-            <h3 class="modal-title" id="apiResponseModalLabel">Nama API</h3>
-            <p class="modal-desc mb-0" id="apiResponseModalDesc">Deskripsi API.</p>
-          </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup">
-            <i class="fas fa-times" aria-hidden="true"></i>
-          </button>
-        </header>
-        <div class="modal-body">
-          <section class="endpoint-container" aria-labelledby="endpointLabel">
-            <div class="endpoint-label">
-              <span id="endpointLabel">Endpoint</span>
-              <button class="copy-btn" id="copyEndpoint" title="Salin ke clipboard" aria-label="Salin endpoint">
-                <i class="far fa-copy" aria-hidden="true"></i>
-              </button>
-            </div>
-            <pre id="apiEndpoint" class="code-block" tabindex="0"></pre>
-          </section>
-          <div id="apiQueryInputContainer" class="query-input-container"></div>
-          <div id="apiResponseLoading" class="d-none" role="status" aria-live="polite">
-            <svg class="spinner-logo" width="50" height="50" viewBox="0 0 100 100" aria-hidden="true">
-              <circle class="spinner-path" cx="50" cy="50" r="40" fill="none" stroke-width="8" />
-              <circle class="spinner-animation" cx="50" cy="50" r="40" fill="none" stroke-width="8" />
-            </svg>
-            <p>Memproses permintaan...</p>
-          </div>
-          <section class="response-container d-none" id="responseContainer" aria-labelledby="responseLabel">
-            <div class="response-label">
-              <span id="responseLabel">Respons</span>
-              <button class="copy-btn" id="copyResponse" title="Salin ke clipboard" aria-label="Salin respons">
-                <i class="far fa-copy" aria-hidden="true"></i>
-              </button>
-            </div>
-            <pre id="apiResponseContent" class="code-block d-none" tabindex="0"></pre>
-          </section>
-        </div>
-        <footer class="modal-footer">
-          <button id="submitQueryBtn" class="btn btn-primary" disabled>
-            <span>Kirim</span>
-            <i class="fas fa-paper-plane ms-2" aria-hidden="true"></i>
-          </button>
-        </footer>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-      <header class="toast-header">
-        <i class="toast-icon fas fa-info-circle me-2" aria-hidden="true"></i>
-        <strong class="me-auto toast-title">Notifikasi</strong>
-        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button>
-      </header>
-      <div class="toast-body">
-        Ini adalah pesan notifikasi.
-      </div>
-    </div>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
