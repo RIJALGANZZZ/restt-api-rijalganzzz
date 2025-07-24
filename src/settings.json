@@ -90,6 +90,12 @@
           "desc": "Menampilkan info gempa di seluruh dunia",
           "path": "/search/gempa",
           "status": "ready"
+        },
+        {
+          "name": "Cerita Hantu",
+          "desc": "Ambil kumpulan cerita horror",
+          "path": "/search/ceritahantu",
+          "status": "ready"
         }
       ]
     },
