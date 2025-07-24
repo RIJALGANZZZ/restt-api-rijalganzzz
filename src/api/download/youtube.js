@@ -1,57 +1,57 @@
 module.exports = function (app) {
-  const fetch = require('node-fetch')
+  const ytdl = require('ytdl-core')
+  const ffmpeg = require('fluent-ffmpeg')
+  const stream = require('stream')
   const FormData = require('form-data')
+  const fetch = require('node-fetch')
 
-  function formatDuration(seconds) {
-    if (!seconds || isNaN(seconds)) return 'Durasi tidak diketahui'
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins} menit ${secs} detik`
+  function formatDuration(sec) {
+    if (!sec) return 'Durasi tidak diketahui'
+    const m = Math.floor(sec / 60), s = Math.floor(sec % 60)
+    return `${m} menit ${s} detik`
   }
 
   async function uploadToCatbox(buffer, filename = 'thumb.jpg') {
     const form = new FormData()
     form.append('reqtype', 'fileupload')
     form.append('fileToUpload', buffer, filename)
-
-    const res = await fetch('https://catbox.moe/user/api.php', {
+    const r = await fetch('https://catbox.moe/user/api.php', {
       method: 'POST',
       body: form
     })
-
-    if (!res.ok) throw new Error('Catbox upload failed')
-    return await res.text()
+    if (!r.ok) throw new Error('Catbox upload failed')
+    return r.text()
   }
 
   app.get('/download/ytmp3', async (req, res) => {
     try {
       const { url } = req.query
-      if (!url) return res.json({ status: false, message: 'Url is required' })
+      if (!url || !ytdl.validateURL(url))
+        return res.status(400).json({ status: false, message: 'URL YouTube tidak valid' })
 
-      const endpoint = `https://api.lolhuman.xyz/api/ytmusic?apikey=free&url=${encodeURIComponent(url)}`
-      const response = await fetch(endpoint)
+      const info = await ytdl.getInfo(url)
+      const title = info.videoDetails.title
+      const sec = parseInt(info.videoDetails.lengthSeconds)
+      const duration = formatDuration(sec)
+      const thumbUrl = info.videoDetails.thumbnails.pop().url
+      const thumbRes = await fetch(thumbUrl)
+      const thumbBuf = await thumbRes.buffer()
+      const tourl = await uploadToCatbox(thumbBuf)
 
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
+      // buat stream mp3 via ffmpeg
+      const passthrough = new stream.PassThrough()
+      ffmpeg(ytdl(url, { quality: 'highestaudio' }))
+        .audioBitrate(128)
+        .format('mp3')
+        .pipe(passthrough)
 
-      const { result } = await response.json()
-      const duration = formatDuration(result.duration || 0)
-
-      let tourl = ''
-      if (result.thumbnail) {
-        const thumbRes = await fetch(result.thumbnail)
-        const thumbBuffer = await thumbRes.buffer()
-        tourl = await uploadToCatbox(thumbBuffer)
-      }
-
-      res.json({
-        status: true,
-        creator: 'RijalGanzz',
-        title: result.title || 'Tidak diketahui',
-        duration,
-        message: `🎵 *Judul:* ${result.title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
-        tourl,
-        audio_url: result.link
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Disposition': `attachment; filename="${title}.mp3"`
       })
+      // kirim metadata dulu, lalu audio
+      res.write(JSON.stringify({ status: true, title, duration, tourl }) + '\n')
+      passthrough.pipe(res)
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
@@ -60,35 +60,27 @@ module.exports = function (app) {
   app.get('/download/ytmp4', async (req, res) => {
     try {
       const { url } = req.query
-      if (!url) return res.json({ status: false, message: 'Url is required' })
+      if (!url || !ytdl.validateURL(url))
+        return res.status(400).json({ status: false, message: 'URL YouTube tidak valid' })
 
-      const endpoint = `https://api.lolhuman.xyz/api/ytvideo?apikey=free&url=${encodeURIComponent(url)}`
-      const response = await fetch(endpoint)
+      const info = await ytdl.getInfo(url)
+      const title = info.videoDetails.title
+      const sec = parseInt(info.videoDetails.lengthSeconds)
+      const duration = formatDuration(sec)
+      const thumbUrl = info.videoDetails.thumbnails.pop().url
+      const thumbRes = await fetch(thumbUrl)
+      const thumbBuf = await thumbRes.buffer()
+      const tourl = await uploadToCatbox(thumbBuf)
 
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
-
-      const { result } = await response.json()
-      const duration = formatDuration(result.duration || 0)
-
-      let tourl = ''
-      if (result.thumbnail) {
-        const thumbRes = await fetch(result.thumbnail)
-        const thumbBuffer = await thumbRes.buffer()
-        tourl = await uploadToCatbox(thumbBuffer)
-      }
-
-      res.json({
-        status: true,
-        creator: 'RijalGanzz',
-        title: result.title || 'Tidak diketahui',
-        duration,
-        quality: result.quality || 'Auto',
-        message: `🎬 *Judul:* ${result.title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${result.quality}\n\n*Sedang Mengirim Video...*`,
-        tourl,
-        video_url: result.link
+      const streamVideo = ytdl(url, { quality: 'highestvideo' })
+      res.set({
+        'Content-Type': 'video/mp4',
+        'Content-Disposition': `attachment; filename="${title}.mp4"`
       })
+      res.write(JSON.stringify({ status: true, title, duration, quality: 'Auto', tourl }) + '\n')
+      streamVideo.pipe(res)
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
   })
-    }
+             }
