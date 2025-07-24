@@ -34,16 +34,19 @@ module.exports = function (app) {
 
     const title = $('div.title > h4').text().trim()
     const durationText = $('div.title > p').text().trim()
-    const duration = durationText.match(/Duration:\s*(\d+):(\d+)/)
-    const seconds = duration ? parseInt(duration[1]) * 60 + parseInt(duration[2]) : 0
-    const thumb = $('img.thumb').attr('src')
+    const durationMatch = durationText.match(/Duration:\s*(\d+):(\d+)/)
+    const seconds = durationMatch ? parseInt(durationMatch[1]) * 60 + parseInt(durationMatch[2]) : 0
+
+    const rawThumb = $('img.thumb').attr('src') || ''
+    const thumb = rawThumb.startsWith('http') ? rawThumb : rawThumb ? 'https://cnvmp3.com' + rawThumb : null
+
     const audio_url = $('a[href*="/file/"]:contains("Download MP3")').attr('href')
     const video_url = $('a[href*="/file/"]:contains("Download MP4")').attr('href')
 
     return {
       title,
       duration: seconds,
-      thumb: thumb.startsWith('http') ? thumb : 'https://cnvmp3.com' + thumb,
+      thumb,
       audio_url,
       video_url
     }
@@ -57,9 +60,12 @@ module.exports = function (app) {
       const data = await getInfoFromCnvmp3(url)
       const duration = formatDuration(data.duration)
 
-      const thumbRes = await fetch(data.thumb)
-      const thumbBuffer = await thumbRes.buffer()
-      const tourl = await uploadToCatbox(thumbBuffer)
+      let tourl = ''
+      if (data.thumb) {
+        const thumbRes = await fetch(data.thumb)
+        const thumbBuffer = await thumbRes.buffer()
+        tourl = await uploadToCatbox(thumbBuffer)
+      }
 
       res.json({
         status: true,
@@ -83,9 +89,12 @@ module.exports = function (app) {
       const data = await getInfoFromCnvmp3(url)
       const duration = formatDuration(data.duration)
 
-      const thumbRes = await fetch(data.thumb)
-      const thumbBuffer = await thumbRes.buffer()
-      const tourl = await uploadToCatbox(thumbBuffer)
+      let tourl = ''
+      if (data.thumb) {
+        const thumbRes = await fetch(data.thumb)
+        const thumbBuffer = await thumbRes.buffer()
+        tourl = await uploadToCatbox(thumbBuffer)
+      }
 
       res.json({
         status: true,
@@ -101,4 +110,4 @@ module.exports = function (app) {
       res.status(500).json({ status: false, message: e.message })
     }
   })
-    }
+          }
