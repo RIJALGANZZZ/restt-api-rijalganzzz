@@ -1,5 +1,6 @@
 module.exports = function (app) {
   const fetch = require('node-fetch')
+  const cheerio = require('cheerio')
   const FormData = require('form-data')
 
   function formatDuration(seconds) {
@@ -7,18 +8,6 @@ module.exports = function (app) {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins} menit ${secs} detik`
-  }
-
-  function getVideoId(link) {
-    const patterns = [
-      /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-      /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/
-    ]
-    for (const p of patterns) {
-      const match = link.match(p)
-      if (match) return match[1]
-    }
-    throw new Error('URL tidak valid')
   }
 
   async function uploadToCatbox(buffer, filename = 'thumb.jpg') {
@@ -35,13 +24,29 @@ module.exports = function (app) {
     return await res.text()
   }
 
-  async function convert(videoId, format = 'mp3') {
-    const convertURL = `https://ytmp3.mobi/@api/json/${videoId}`
-    const response = await fetch(convertURL)
-    if (!response.ok) throw new Error('Gagal menghubungi ytmp3.mobi')
-    const json = await response.json()
-    if (!json || !json.vid) throw new Error('Video tidak ditemukan')
-    return json
+  async function getInfoFromCnvmp3(url) {
+    const res = await fetch(`https://cnvmp3.com/convert?url=${encodeURIComponent(url)}`, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    })
+
+    const html = await res.text()
+    const $ = cheerio.load(html)
+
+    const title = $('div.title > h4').text().trim()
+    const durationText = $('div.title > p').text().trim()
+    const duration = durationText.match(/Duration:\s*(\d+):(\d+)/)
+    const seconds = duration ? parseInt(duration[1]) * 60 + parseInt(duration[2]) : 0
+    const thumb = $('img.thumb').attr('src')
+    const audio_url = $('a[href*="/file/"]:contains("Download MP3")').attr('href')
+    const video_url = $('a[href*="/file/"]:contains("Download MP4")').attr('href')
+
+    return {
+      title,
+      duration: seconds,
+      thumb: thumb.startsWith('http') ? thumb : 'https://cnvmp3.com' + thumb,
+      audio_url,
+      video_url
+    }
   }
 
   app.get('/download/ytmp3', async (req, res) => {
@@ -49,23 +54,20 @@ module.exports = function (app) {
       const { url } = req.query
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const videoId = getVideoId(url)
-      const data = await convert(videoId, 'mp3')
+      const data = await getInfoFromCnvmp3(url)
+      const duration = formatDuration(data.duration)
 
-      const title = data.title || 'Judul tidak tersedia'
-      const duration = formatDuration(data.length_seconds)
-
-      const thumbRes = await fetch(data.thumbnail)
+      const thumbRes = await fetch(data.thumb)
       const thumbBuffer = await thumbRes.buffer()
       const tourl = await uploadToCatbox(thumbBuffer)
 
       res.json({
         status: true,
-        title,
+        title: data.title,
         duration,
-        message: `🎵 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
+        message: `🎵 *Judul:* ${data.title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
         tourl,
-        audio_url: data.link,
+        audio_url: data.audio_url,
         creator: 'RijalGanzz'
       })
     } catch (e) {
@@ -78,24 +80,21 @@ module.exports = function (app) {
       const { url } = req.query
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const videoId = getVideoId(url)
-      const data = await convert(videoId, 'mp4')
+      const data = await getInfoFromCnvmp3(url)
+      const duration = formatDuration(data.duration)
 
-      const title = data.title || 'Judul tidak tersedia'
-      const duration = formatDuration(data.length_seconds)
-
-      const thumbRes = await fetch(data.thumbnail)
+      const thumbRes = await fetch(data.thumb)
       const thumbBuffer = await thumbRes.buffer()
       const tourl = await uploadToCatbox(thumbBuffer)
 
       res.json({
         status: true,
-        title,
+        title: data.title,
         duration,
-        quality: '480p',
-        message: `🎬 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* 480p\n\n*Sedang Mengirim Video...*`,
+        quality: 'Auto',
+        message: `🎬 *Judul:* ${data.title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* Auto\n\n*Sedang Mengirim Video...*`,
         tourl,
-        video_url: data.link,
+        video_url: data.video_url,
         creator: 'RijalGanzz'
       })
     } catch (e) {
