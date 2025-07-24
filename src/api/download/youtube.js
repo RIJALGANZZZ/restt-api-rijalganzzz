@@ -9,6 +9,18 @@ module.exports = function (app) {
     return `${mins} menit ${secs} detik`
   }
 
+  function getVideoId(link) {
+    const patterns = [
+      /(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/
+    ]
+    for (const p of patterns) {
+      const match = link.match(p)
+      if (match) return match[1]
+    }
+    throw new Error('URL tidak valid')
+  }
+
   async function uploadToCatbox(buffer, filename = 'thumb.jpg') {
     const form = new FormData()
     form.append('reqtype', 'fileupload')
@@ -23,21 +35,13 @@ module.exports = function (app) {
     return await res.text()
   }
 
-  async function fetchJson(url) {
-    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } })
-    if (!res.ok) throw new Error('Gagal fetch data')
-    return await res.json()
-  }
-
-  function getVideoId(link) {
-    try {
-      const u = new URL(link)
-      const id = u.searchParams.get('v')
-      if (!id) throw new Error('ID video tidak valid')
-      return id
-    } catch {
-      throw new Error('URL tidak valid')
-    }
+  async function convert(videoId, format = 'mp3') {
+    const convertURL = `https://ytmp3.mobi/@api/json/${videoId}`
+    const response = await fetch(convertURL)
+    if (!response.ok) throw new Error('Gagal menghubungi ytmp3.mobi')
+    const json = await response.json()
+    if (!json || !json.vid) throw new Error('Video tidak ditemukan')
+    return json
   }
 
   app.get('/download/ytmp3', async (req, res) => {
@@ -46,34 +50,24 @@ module.exports = function (app) {
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
       const videoId = getVideoId(url)
-      const convertURL = `https://ytmp3.mobi/@api/button/mp3/${videoId}`
-      const param = new URLSearchParams({ v: videoId, f: 'mp3', _: Math.random() })
-      const { progressURL, downloadURL } = await fetchJson(`${convertURL}&${param.toString()}`)
+      const data = await convert(videoId, 'mp3')
 
-      for (let i = 0; i < 20; i++) {
-        const progressData = await fetchJson(progressURL)
-        if (progressData.progress === 3) {
-          const downloadData = await fetchJson(downloadURL)
-          const title = downloadData.title || 'Judul tidak tersedia'
-          const duration = formatDuration(parseInt(downloadData.length))
-          const thumbRes = await fetch(downloadData.thumb)
-          const thumbBuffer = await thumbRes.buffer()
-          const tourl = await uploadToCatbox(thumbBuffer)
+      const title = data.title || 'Judul tidak tersedia'
+      const duration = formatDuration(data.length_seconds)
 
-          return res.json({
-            status: true,
-            title,
-            duration,
-            message: `🎵 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
-            tourl,
-            audio_url: downloadData.download,
-            creator: 'RijalGanzz'
-          })
-        }
-        await new Promise(r => setTimeout(r, 1000))
-      }
+      const thumbRes = await fetch(data.thumbnail)
+      const thumbBuffer = await thumbRes.buffer()
+      const tourl = await uploadToCatbox(thumbBuffer)
 
-      throw new Error('Timeout konversi audio')
+      res.json({
+        status: true,
+        title,
+        duration,
+        message: `🎵 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
+        tourl,
+        audio_url: data.link,
+        creator: 'RijalGanzz'
+      })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
@@ -85,38 +79,27 @@ module.exports = function (app) {
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
       const videoId = getVideoId(url)
-      const convertURL = `https://ytmp3.mobi/@api/button/mp4/${videoId}`
-      const param = new URLSearchParams({ v: videoId, f: 'mp4', _: Math.random() })
-      const { progressURL, downloadURL } = await fetchJson(`${convertURL}&${param.toString()}`)
+      const data = await convert(videoId, 'mp4')
 
-      for (let i = 0; i < 20; i++) {
-        const progressData = await fetchJson(progressURL)
-        if (progressData.progress === 3) {
-          const downloadData = await fetchJson(downloadURL)
-          const title = downloadData.title || 'Judul tidak tersedia'
-          const duration = formatDuration(parseInt(downloadData.length))
-          const quality = downloadData.quality || 'Tidak diketahui'
-          const thumbRes = await fetch(downloadData.thumb)
-          const thumbBuffer = await thumbRes.buffer()
-          const tourl = await uploadToCatbox(thumbBuffer)
+      const title = data.title || 'Judul tidak tersedia'
+      const duration = formatDuration(data.length_seconds)
 
-          return res.json({
-            status: true,
-            title,
-            duration,
-            quality,
-            message: `🎬 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${quality}\n\n*Sedang Mengirim Video...*`,
-            tourl,
-            video_url: downloadData.download,
-            creator: 'RijalGanzz'
-          })
-        }
-        await new Promise(r => setTimeout(r, 1000))
-      }
+      const thumbRes = await fetch(data.thumbnail)
+      const thumbBuffer = await thumbRes.buffer()
+      const tourl = await uploadToCatbox(thumbBuffer)
 
-      throw new Error('Timeout konversi video')
+      res.json({
+        status: true,
+        title,
+        duration,
+        quality: '480p',
+        message: `🎬 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* 480p\n\n*Sedang Mengirim Video...*`,
+        tourl,
+        video_url: data.link,
+        creator: 'RijalGanzz'
+      })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
   })
-                                }
+    }
