@@ -1,6 +1,5 @@
 module.exports = function (app) {
   const fetch = require('node-fetch')
-  const cheerio = require('cheerio')
   const FormData = require('form-data')
 
   function formatDuration(seconds) {
@@ -24,41 +23,16 @@ module.exports = function (app) {
     return await res.text()
   }
 
-  async function getInfoFromCnvmp3(url) {
-    const res = await fetch(`https://cnvmp3.com/convert?url=${encodeURIComponent(url)}`, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    })
-
-    const html = await res.text()
-    const $ = cheerio.load(html)
-
-    const title = $('div.title > h4').text().trim()
-    const durationText = $('div.title > p').text().trim()
-    const durationMatch = durationText.match(/Duration:\s*(\d+):(\d+)/)
-    const seconds = durationMatch ? parseInt(durationMatch[1]) * 60 + parseInt(durationMatch[2]) : 0
-
-    const rawThumb = $('img.thumb').attr('src') || ''
-    const thumb = rawThumb.startsWith('http') ? rawThumb : rawThumb ? 'https://cnvmp3.com' + rawThumb : null
-
-    const audio_url = $('a[href*="/file/"]:contains("Download MP3")').attr('href')
-    const video_url = $('a[href*="/file/"]:contains("Download MP4")').attr('href')
-
-    return {
-      title,
-      duration: seconds,
-      thumb,
-      audio_url,
-      video_url
-    }
-  }
-
   app.get('/download/ytmp3', async (req, res) => {
     try {
       const { url } = req.query
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const data = await getInfoFromCnvmp3(url)
-      const duration = formatDuration(data.duration)
+      const response = await fetch(`https://api.akuari.my.id/downloader/youtube2?link=${encodeURIComponent(url)}`)
+      const result = await response.json()
+      const data = result.mp3 || {}
+
+      const duration = formatDuration(data.duration || 0)
 
       let tourl = ''
       if (data.thumb) {
@@ -69,12 +43,12 @@ module.exports = function (app) {
 
       res.json({
         status: true,
-        title: data.title,
+        creator: 'RijalGanzz',
+        title: data.title || 'Tidak diketahui',
         duration,
         message: `🎵 *Judul:* ${data.title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
         tourl,
-        audio_url: data.audio_url,
-        creator: 'RijalGanzz'
+        audio_url: data.link
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
@@ -86,8 +60,11 @@ module.exports = function (app) {
       const { url } = req.query
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const data = await getInfoFromCnvmp3(url)
-      const duration = formatDuration(data.duration)
+      const response = await fetch(`https://api.akuari.my.id/downloader/youtube2?link=${encodeURIComponent(url)}`)
+      const result = await response.json()
+      const data = result.mp4?.[0] || {}
+
+      const duration = formatDuration(result.mp4?.[0]?.duration || 0)
 
       let tourl = ''
       if (data.thumb) {
@@ -98,16 +75,16 @@ module.exports = function (app) {
 
       res.json({
         status: true,
-        title: data.title,
+        creator: 'RijalGanzz',
+        title: data.title || 'Tidak diketahui',
         duration,
-        quality: 'Auto',
-        message: `🎬 *Judul:* ${data.title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* Auto\n\n*Sedang Mengirim Video...*`,
+        quality: data.quality || 'Auto',
+        message: `🎬 *Judul:* ${data.title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${data.quality}\n\n*Sedang Mengirim Video...*`,
         tourl,
-        video_url: data.video_url,
-        creator: 'RijalGanzz'
+        video_url: data.link
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
   })
-          }
+                                    }
