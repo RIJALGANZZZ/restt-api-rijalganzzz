@@ -1,7 +1,6 @@
 module.exports = function (app) {
   const fetch = require('node-fetch')
   const FormData = require('form-data')
-  const AbortController = require('abort-controller')
 
   function formatDuration(seconds) {
     if (!seconds || isNaN(seconds)) return 'Durasi tidak diketahui'
@@ -24,29 +23,22 @@ module.exports = function (app) {
     return await res.text()
   }
 
-  async function safeFetch(url, timeoutMs = 10000) {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), timeoutMs)
-    const res = await fetch(url, { signal: controller.signal })
-    clearTimeout(timeout)
-    return res
-  }
-
   app.get('/download/ytmp3', async (req, res) => {
     try {
       const { url } = req.query
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const apiUrl = `https://api.zyy.my.id/api/downloader/youtube/playmp3?query=${encodeURIComponent(url)}`
-      const response = await safeFetch(apiUrl)
-      const result = await response.json()
-      const data = result.result
+      const endpoint = `https://api.lolhuman.xyz/api/ytmusic?apikey=free&url=${encodeURIComponent(url)}`
+      const response = await fetch(endpoint)
 
-      const duration = formatDuration(data.duration || 0)
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
+
+      const { result } = await response.json()
+      const duration = formatDuration(result.duration || 0)
 
       let tourl = ''
-      if (data.thumbnail) {
-        const thumbRes = await safeFetch(data.thumbnail)
+      if (result.thumbnail) {
+        const thumbRes = await fetch(result.thumbnail)
         const thumbBuffer = await thumbRes.buffer()
         tourl = await uploadToCatbox(thumbBuffer)
       }
@@ -54,11 +46,11 @@ module.exports = function (app) {
       res.json({
         status: true,
         creator: 'RijalGanzz',
-        title: data.title || 'Tidak diketahui',
+        title: result.title || 'Tidak diketahui',
         duration,
-        message: `🎵 *Judul:* ${data.title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
+        message: `🎵 *Judul:* ${result.title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
         tourl,
-        audio_url: data.audio
+        audio_url: result.link
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
@@ -70,16 +62,17 @@ module.exports = function (app) {
       const { url } = req.query
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const apiUrl = `https://api.zyy.my.id/api/downloader/youtube/playmp4?query=${encodeURIComponent(url)}`
-      const response = await safeFetch(apiUrl)
-      const result = await response.json()
-      const data = result.result
+      const endpoint = `https://api.lolhuman.xyz/api/ytvideo?apikey=free&url=${encodeURIComponent(url)}`
+      const response = await fetch(endpoint)
 
-      const duration = formatDuration(data.duration || 0)
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
+
+      const { result } = await response.json()
+      const duration = formatDuration(result.duration || 0)
 
       let tourl = ''
-      if (data.thumbnail) {
-        const thumbRes = await safeFetch(data.thumbnail)
+      if (result.thumbnail) {
+        const thumbRes = await fetch(result.thumbnail)
         const thumbBuffer = await thumbRes.buffer()
         tourl = await uploadToCatbox(thumbBuffer)
       }
@@ -87,15 +80,15 @@ module.exports = function (app) {
       res.json({
         status: true,
         creator: 'RijalGanzz',
-        title: data.title || 'Tidak diketahui',
+        title: result.title || 'Tidak diketahui',
         duration,
-        quality: data.quality || 'Auto',
-        message: `🎬 *Judul:* ${data.title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${data.quality}\n\n*Sedang Mengirim Video...*`,
+        quality: result.quality || 'Auto',
+        message: `🎬 *Judul:* ${result.title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${result.quality}\n\n*Sedang Mengirim Video...*`,
         tourl,
-        video_url: data.video
+        video_url: result.link
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
   })
-        }
+    }
