@@ -1,34 +1,45 @@
 module.exports = function (app) {
-  const ytdl = require('ytdl-core')
   const fetch = require('node-fetch')
   const FormData = require('form-data')
 
-  function formatDuration(sec) {
-    if (!sec) return 'Durasi tidak diketahui'
-    const m = Math.floor(sec / 60), s = Math.floor(sec % 60)
-    return `${m} menit ${s} detik`
+  function formatDuration(seconds) {
+    if (!seconds || isNaN(seconds)) return 'Durasi tidak diketahui'
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins} menit ${secs} detik`
   }
 
   async function uploadToCatbox(buffer, filename = 'thumb.jpg') {
     const form = new FormData()
     form.append('reqtype', 'fileupload')
     form.append('fileToUpload', buffer, filename)
-    const r = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: form })
-    if (!r.ok) throw new Error('Catbox upload failed')
-    return r.text()
+
+    const res = await fetch('https://catbox.moe/user/api.php', {
+      method: 'POST',
+      body: form
+    })
+
+    if (!res.ok) throw new Error('Catbox upload failed')
+    return await res.text()
   }
 
   app.get('/download/ytmp3', async (req, res) => {
     try {
       const { url } = req.query
-      if (!url || !ytdl.validateURL(url)) return res.json({ status: false, message: 'URL tidak valid' })
+      if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const info = await ytdl.getInfo(url)
-      const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' })
-      const title = info.videoDetails.title
-      const duration = formatDuration(parseInt(info.videoDetails.lengthSeconds))
-      const thumbnail = info.videoDetails.thumbnails.pop().url
-      const thumbBuffer = await (await fetch(thumbnail)).buffer()
+      const response = await fetch(`https://api.akuari.my.id/downloader/youtube2?link=${encodeURIComponent(url)}`)
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
+
+      const result = await response.json()
+      const data = result.hasil
+      if (!data || !data.audio) throw new Error('Audio data not found')
+
+      const title = data.title || 'Judul tidak tersedia'
+      const duration = formatDuration(data.duration)
+
+      const thumbRes = await fetch(data.thumbnail)
+      const thumbBuffer = await thumbRes.buffer()
       const tourl = await uploadToCatbox(thumbBuffer)
 
       res.json({
@@ -38,7 +49,7 @@ module.exports = function (app) {
         duration,
         message: `🎵 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
         tourl,
-        audio_url: audioFormat.url
+        audio_url: data.audio
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
@@ -48,15 +59,20 @@ module.exports = function (app) {
   app.get('/download/ytmp4', async (req, res) => {
     try {
       const { url } = req.query
-      if (!url || !ytdl.validateURL(url)) return res.json({ status: false, message: 'URL tidak valid' })
+      if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const info = await ytdl.getInfo(url)
-      const videoFormat = ytdl.chooseFormat(info.formats, { quality: '18' }) // mp4 360p biasanya
-      const title = info.videoDetails.title
-      const duration = formatDuration(parseInt(info.videoDetails.lengthSeconds))
-      const quality = videoFormat.qualityLabel
-      const thumbnail = info.videoDetails.thumbnails.pop().url
-      const thumbBuffer = await (await fetch(thumbnail)).buffer()
+      const response = await fetch(`https://api.akuari.my.id/downloader/youtube2?link=${encodeURIComponent(url)}`)
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
+
+      const result = await response.json()
+      const data = result.hasil
+      if (!data || !data.video) throw new Error('Video data not found')
+
+      const title = data.title || 'Judul tidak tersedia'
+      const duration = formatDuration(data.duration)
+
+      const thumbRes = await fetch(data.thumbnail)
+      const thumbBuffer = await thumbRes.buffer()
       const tourl = await uploadToCatbox(thumbBuffer)
 
       res.json({
@@ -64,13 +80,13 @@ module.exports = function (app) {
         creator: 'RijalGanzz',
         title,
         duration,
-        quality,
-        message: `🎬 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${quality}\n\n*Sedang Mengirim Video...*`,
+        quality: data.quality || 'unknown',
+        message: `🎬 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${data.quality || 'unknown'}\n\n*Sedang Mengirim Video...*`,
         tourl,
-        video_url: videoFormat.url
+        video_url: data.video
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
   })
-                                 }
+        }
