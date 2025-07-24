@@ -1,9 +1,7 @@
 module.exports = function (app) {
   const ytdl = require('ytdl-core')
-  const ffmpeg = require('fluent-ffmpeg')
-  const stream = require('stream')
-  const FormData = require('form-data')
   const fetch = require('node-fetch')
+  const FormData = require('form-data')
 
   function formatDuration(sec) {
     if (!sec) return 'Durasi tidak diketahui'
@@ -15,10 +13,7 @@ module.exports = function (app) {
     const form = new FormData()
     form.append('reqtype', 'fileupload')
     form.append('fileToUpload', buffer, filename)
-    const r = await fetch('https://catbox.moe/user/api.php', {
-      method: 'POST',
-      body: form
-    })
+    const r = await fetch('https://catbox.moe/user/api.php', { method: 'POST', body: form })
     if (!r.ok) throw new Error('Catbox upload failed')
     return r.text()
   }
@@ -26,32 +21,25 @@ module.exports = function (app) {
   app.get('/download/ytmp3', async (req, res) => {
     try {
       const { url } = req.query
-      if (!url || !ytdl.validateURL(url))
-        return res.status(400).json({ status: false, message: 'URL YouTube tidak valid' })
+      if (!url || !ytdl.validateURL(url)) return res.json({ status: false, message: 'URL tidak valid' })
 
       const info = await ytdl.getInfo(url)
+      const audioFormat = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' })
       const title = info.videoDetails.title
-      const sec = parseInt(info.videoDetails.lengthSeconds)
-      const duration = formatDuration(sec)
-      const thumbUrl = info.videoDetails.thumbnails.pop().url
-      const thumbRes = await fetch(thumbUrl)
-      const thumbBuf = await thumbRes.buffer()
-      const tourl = await uploadToCatbox(thumbBuf)
+      const duration = formatDuration(parseInt(info.videoDetails.lengthSeconds))
+      const thumbnail = info.videoDetails.thumbnails.pop().url
+      const thumbBuffer = await (await fetch(thumbnail)).buffer()
+      const tourl = await uploadToCatbox(thumbBuffer)
 
-      // buat stream mp3 via ffmpeg
-      const passthrough = new stream.PassThrough()
-      ffmpeg(ytdl(url, { quality: 'highestaudio' }))
-        .audioBitrate(128)
-        .format('mp3')
-        .pipe(passthrough)
-
-      res.set({
-        'Content-Type': 'audio/mpeg',
-        'Content-Disposition': `attachment; filename="${title}.mp3"`
+      res.json({
+        status: true,
+        creator: 'RijalGanzz',
+        title,
+        duration,
+        message: `🎵 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
+        tourl,
+        audio_url: audioFormat.url
       })
-      // kirim metadata dulu, lalu audio
-      res.write(JSON.stringify({ status: true, title, duration, tourl }) + '\n')
-      passthrough.pipe(res)
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
@@ -60,27 +48,29 @@ module.exports = function (app) {
   app.get('/download/ytmp4', async (req, res) => {
     try {
       const { url } = req.query
-      if (!url || !ytdl.validateURL(url))
-        return res.status(400).json({ status: false, message: 'URL YouTube tidak valid' })
+      if (!url || !ytdl.validateURL(url)) return res.json({ status: false, message: 'URL tidak valid' })
 
       const info = await ytdl.getInfo(url)
+      const videoFormat = ytdl.chooseFormat(info.formats, { quality: '18' }) // mp4 360p biasanya
       const title = info.videoDetails.title
-      const sec = parseInt(info.videoDetails.lengthSeconds)
-      const duration = formatDuration(sec)
-      const thumbUrl = info.videoDetails.thumbnails.pop().url
-      const thumbRes = await fetch(thumbUrl)
-      const thumbBuf = await thumbRes.buffer()
-      const tourl = await uploadToCatbox(thumbBuf)
+      const duration = formatDuration(parseInt(info.videoDetails.lengthSeconds))
+      const quality = videoFormat.qualityLabel
+      const thumbnail = info.videoDetails.thumbnails.pop().url
+      const thumbBuffer = await (await fetch(thumbnail)).buffer()
+      const tourl = await uploadToCatbox(thumbBuffer)
 
-      const streamVideo = ytdl(url, { quality: 'highestvideo' })
-      res.set({
-        'Content-Type': 'video/mp4',
-        'Content-Disposition': `attachment; filename="${title}.mp4"`
+      res.json({
+        status: true,
+        creator: 'RijalGanzz',
+        title,
+        duration,
+        quality,
+        message: `🎬 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${quality}\n\n*Sedang Mengirim Video...*`,
+        tourl,
+        video_url: videoFormat.url
       })
-      res.write(JSON.stringify({ status: true, title, duration, quality: 'Auto', tourl }) + '\n')
-      streamVideo.pipe(res)
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
   })
-             }
+                                 }
