@@ -1,6 +1,7 @@
 module.exports = function (app) {
   const fetch = require('node-fetch')
   const FormData = require('form-data')
+  const AbortController = require('abort-controller')
 
   function formatDuration(seconds) {
     if (!seconds || isNaN(seconds)) return 'Durasi tidak diketahui'
@@ -23,20 +24,29 @@ module.exports = function (app) {
     return await res.text()
   }
 
+  async function safeFetch(url, timeoutMs = 10000) {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), timeoutMs)
+    const res = await fetch(url, { signal: controller.signal })
+    clearTimeout(timeout)
+    return res
+  }
+
   app.get('/download/ytmp3', async (req, res) => {
     try {
       const { url } = req.query
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const response = await fetch(`https://api.akuari.my.id/downloader/youtube2?link=${encodeURIComponent(url)}`)
+      const apiUrl = `https://api.zyy.my.id/api/downloader/youtube/playmp3?query=${encodeURIComponent(url)}`
+      const response = await safeFetch(apiUrl)
       const result = await response.json()
-      const data = result.mp3 || {}
+      const data = result.result
 
       const duration = formatDuration(data.duration || 0)
 
       let tourl = ''
-      if (data.thumb) {
-        const thumbRes = await fetch(data.thumb)
+      if (data.thumbnail) {
+        const thumbRes = await safeFetch(data.thumbnail)
         const thumbBuffer = await thumbRes.buffer()
         tourl = await uploadToCatbox(thumbBuffer)
       }
@@ -48,7 +58,7 @@ module.exports = function (app) {
         duration,
         message: `🎵 *Judul:* ${data.title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
         tourl,
-        audio_url: data.link
+        audio_url: data.audio
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
@@ -60,15 +70,16 @@ module.exports = function (app) {
       const { url } = req.query
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const response = await fetch(`https://api.akuari.my.id/downloader/youtube2?link=${encodeURIComponent(url)}`)
+      const apiUrl = `https://api.zyy.my.id/api/downloader/youtube/playmp4?query=${encodeURIComponent(url)}`
+      const response = await safeFetch(apiUrl)
       const result = await response.json()
-      const data = result.mp4?.[0] || {}
+      const data = result.result
 
-      const duration = formatDuration(result.mp4?.[0]?.duration || 0)
+      const duration = formatDuration(data.duration || 0)
 
       let tourl = ''
-      if (data.thumb) {
-        const thumbRes = await fetch(data.thumb)
+      if (data.thumbnail) {
+        const thumbRes = await safeFetch(data.thumbnail)
         const thumbBuffer = await thumbRes.buffer()
         tourl = await uploadToCatbox(thumbBuffer)
       }
@@ -81,10 +92,10 @@ module.exports = function (app) {
         quality: data.quality || 'Auto',
         message: `🎬 *Judul:* ${data.title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${data.quality}\n\n*Sedang Mengirim Video...*`,
         tourl,
-        video_url: data.link
+        video_url: data.video
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
     }
   })
-                                    }
+        }
