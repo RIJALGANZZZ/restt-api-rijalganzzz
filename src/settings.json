@@ -1,6 +1,6 @@
 {
   "name": "Rest Api RijalGanzz",
-  "version": "v1.17",
+  "version": "v1.18",
   "description": "Welcome Rijalganzz Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
@@ -160,6 +160,15 @@
           "desc": "Downloader gitclone",
           "status": "ready",
           "path": "/download/github?url="
+        },
+        {
+          "name": "Facebook",
+          "desc": "Downloader video Facebook",
+          "status": "ready",
+          "path": "/download/facebook?url=",
+          "params": {
+            "url": "URL video Facebook"
+          }
         }
       ]
     },
