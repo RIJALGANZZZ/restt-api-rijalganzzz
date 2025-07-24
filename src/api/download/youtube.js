@@ -1,55 +1,32 @@
 module.exports = function (app) {
   const fetch = require('node-fetch')
-  const FormData = require('form-data')
-
-  function formatDuration(seconds) {
-    if (!seconds || isNaN(seconds)) return 'Durasi tidak diketahui'
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins} menit ${secs} detik`
-  }
-
-  async function uploadToCatbox(buffer, filename = 'thumb.jpg') {
-    const form = new FormData()
-    form.append('reqtype', 'fileupload')
-    form.append('fileToUpload', buffer, filename)
-
-    const res = await fetch('https://catbox.moe/user/api.php', {
-      method: 'POST',
-      body: form
-    })
-
-    if (!res.ok) throw new Error('Catbox upload failed')
-    return await res.text()
-  }
 
   app.get('/download/ytmp3', async (req, res) => {
     try {
-      const { url } = req.query
-      if (!url) return res.json({ status: false, message: 'Url is required' })
+      const { query } = req.query
+      if (!query) return res.json({ status: false, message: 'Query is required' })
 
-      const response = await fetch(`https://api.akuari.my.id/downloader/youtube2?link=${encodeURIComponent(url)}`)
+      const response = await fetch(`https://api.vreden.my.id/api/ytplaymp3?query=${encodeURIComponent(query)}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      })
+
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
 
-      const result = await response.json()
-      const data = result.hasil
-      if (!data || !data.audio) throw new Error('Audio data not found')
-
-      const title = data.title || 'Judul tidak tersedia'
-      const duration = formatDuration(data.duration)
-
-      const thumbRes = await fetch(data.thumbnail)
-      const thumbBuffer = await thumbRes.buffer()
-      const tourl = await uploadToCatbox(thumbBuffer)
+      const json = await response.json()
+      const meta = json.result.metadata
+      const dl = json.result.download
 
       res.json({
         status: true,
-        creator: 'RijalGanzz',
-        title,
-        duration,
-        message: `🎵 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
-        tourl,
-        audio_url: data.audio
+        title: meta.title,
+        creator: meta.author.name,
+        duration: meta.timestamp,
+        thumbnail: meta.thumbnail,
+        type: meta.type,
+        format: 'mp3',
+        quality: dl.quality,
+        download_url: dl.url,
+        filename: dl.filename
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
@@ -61,29 +38,22 @@ module.exports = function (app) {
       const { url } = req.query
       if (!url) return res.json({ status: false, message: 'Url is required' })
 
-      const response = await fetch(`https://api.akuari.my.id/downloader/youtube2?link=${encodeURIComponent(url)}`)
+      const response = await fetch(`https://zenz.biz.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0' }
+      })
+
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
 
-      const result = await response.json()
-      const data = result.hasil
-      if (!data || !data.video) throw new Error('Video data not found')
-
-      const title = data.title || 'Judul tidak tersedia'
-      const duration = formatDuration(data.duration)
-
-      const thumbRes = await fetch(data.thumbnail)
-      const thumbBuffer = await thumbRes.buffer()
-      const tourl = await uploadToCatbox(thumbBuffer)
-
+      const data = await response.json()
       res.json({
         status: true,
+        title: data.title,
         creator: 'RijalGanzz',
-        title,
-        duration,
-        quality: data.quality || 'unknown',
-        message: `🎬 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${data.quality || 'unknown'}\n\n*Sedang Mengirim Video...*`,
-        tourl,
-        video_url: data.video
+        duration: data.duration,
+        thumbnail: data.thumbnail,
+        type: data.type,
+        quality: data.quality,
+        download_url: data.download_url
       })
     } catch (e) {
       res.status(500).json({ status: false, message: e.message })
