@@ -9,16 +9,18 @@ module.exports = function (app) {
     if (!text) return res.status(400).json({ status: false, message: 'text parameter is required' });
 
     try {
-      const words = text.split(" ");
-      const tempDir = path.join(process.cwd(), "tmp");
+      const words = text.split(' ');
+      const tempDir = path.join(process.cwd(), 'tmp');
       if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
       const framePaths = [];
 
       for (let i = 0; i < words.length; i++) {
-        const currentText = words.slice(0, i + 1).join(" ");
-        const response = await axios.get(`https://rest-api.nazirganz.space/maker/brat?text=${encodeURIComponent(currentText)}`, {
-          responseType: 'arraybuffer'
-        });
+        const currentText = words.slice(0, i + 1).join(' ');
+        const url = `https://aqul-brat.hf.space/?text=${encodeURIComponent(currentText)}`;
+        const response = await axios.get(url, { responseType: 'arraybuffer' });
+
+        if (!response || !response.data) throw new Error('No data received from Aqul API');
+
         const framePath = path.join(tempDir, `frame${i}.mp4`);
         fs.writeFileSync(framePath, response.data);
         framePaths.push(framePath);
@@ -39,8 +41,8 @@ module.exports = function (app) {
       fs.unlinkSync(fileListPath);
       fs.unlinkSync(outputVideoPath);
     } catch (e) {
-      console.error(e);
-      res.status(500).json({ status: false, message: 'Failed to generate brat video' });
+      console.error('❌ ERROR:', e);
+      res.status(500).json({ status: false, message: 'Failed to generate brat video', error: e.toString() });
     }
   });
 };
