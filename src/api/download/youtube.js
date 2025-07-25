@@ -1,50 +1,103 @@
-module.exports = function (app) {
-  const fetch = require('node-fetch')
-  const cheerio = require('cheerio')
-  const FormData = require('form-data')
+const express = require('express')
+const axios = require('axios')
+const cheerio = require('cheerio')
+const FormData = require('form-data')
+const fetch = require('node-fetch')
 
-  async function uploadToCatbox(buffer, filename = 'video.mp4') {
-    const form = new FormData()
-    form.append('reqtype', 'fileupload')
-    form.append('fileToUpload', buffer, filename)
-    const res = await fetch('https://catbox.moe/user/api.php', {
-      method: 'POST',
-      body: form
-    })
-    if (!res.ok) throw new Error('Catbox upload failed')
-    return await res.text()
-  }
+const app = express()
+const PORT = process.env.PORT || 3000
 
-  async function getMp4LinkFromMp3Juice(url) {
-    const videoId = url.split('v=')[1] || url.split('/').pop().replace('#', '')
-    const target = `https://mp3juice.co/api/ajaxSearch/index?query=${videoId}`
-    const res = await fetch(target, {
-      headers: { 'x-requested-with': 'XMLHttpRequest' }
-    })
-    const json = await res.json()
-    if (!json || !json.length) throw 'Video not found'
+function formatDuration(seconds) {
+  if (!seconds || isNaN(seconds)) return 'Unknown Duration'
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins} minute(s) ${secs} second(s)`
+}
 
-    const video = json[0]
-    const html = await fetch(`https://mp3juice.co/api/ajaxFetch/index?id=${video.videoId}&title=${encodeURIComponent(video.title)}`)
-      .then(res => res.text())
+async function uploadToCatbox(buffer, filename = 'thumb.jpg') {
+  const form = new FormData()
+  form.append('reqtype', 'fileupload')
+  form.append('fileToUpload', buffer, filename)
 
-    const $ = cheerio.load(html)
-    const mp4 = $('a:contains("MP4 Download")').attr('href')
-    if (!mp4) throw 'MP4 link not found'
-
-    return { title: video.title, thumb: video.thumb, mp4 }
-  }
-
-  app.get('/download/ytmp4', async (req, res) => {
-    try {
-      const { url } = req.query
-      if (!url) return res.json({ status: false, message: 'Missing url' })
-      const { title, thumb, mp4 } = await getMp4LinkFromMp3Juice(url)
-      const buffer = await fetch(mp4).then(r => r.buffer())
-      const catboxUrl = await uploadToCatbox(buffer, `${title}.mp4`)
-      res.json({ status: true, title, thumb, catboxUrl })
-    } catch (e) {
-      res.json({ status: false, message: e.message || e })
-    }
+  const res = await fetch('https://catbox.moe/user/api.php', {
+    method: 'POST',
+    body: form
   })
-            }
+
+  if (!res.ok) throw new Error('Upload to Catbox failed')
+  return await res.text()
+}
+
+app.get('/download/ytmp3', async (req, res) => {
+  try {
+    const { url } = req.query
+    if (!url) return res.json({ status: false, message: 'Missing URL' })
+
+    const ytId = url.split('v=')[1]?.substring(0, 11)
+    const page = await axios.get(`https://y2mate.nu/en-hq8z/`)
+    const $ = cheerio.load(page.data)
+
+    const token = $('input[name="token"]').val()
+    const response = await axios.post('https://y2mate.nu/api/ajaxSearch', {
+      query: url
+    })
+
+    const result = response.data?.data?.audios?.[0]
+    if (!result) throw new Error('Failed to fetch MP3')
+
+    const thumbRes = await fetch(result.thumbnail)
+    const thumbBuffer = await thumbRes.buffer()
+    const catboxUrl = await uploadToCatbox(thumbBuffer)
+
+    res.json({
+      status: true,
+      title: result.title,
+      duration: formatDuration(result.duration),
+      message: 'Audio is ready',
+      tourl: catboxUrl,
+      audio_url: result.url,
+      creator: 'RijalGanzz'
+    })
+  } catch (e) {
+    res.json({ status: false, message: e.message, creator: 'RijalGanzz' })
+  }
+})
+
+app.get('/download/ytmp4', async (req, res) => {
+  try {
+    const { url } = req.query
+    if (!url) return res.json({ status: false, message: 'Missing URL' })
+
+    const ytId = url.split('v=')[1]?.substring(0, 11)
+    const page = await axios.get(`https://y2mate.nu/en-hq8z/`)
+    const $ = cheerio.load(page.data)
+
+    const token = $('input[name="token"]').val()
+    const response = await axios.post('https://y2mate.nu/api/ajaxSearch', {
+      query: url
+    })
+
+    const result = response.data?.data?.videos?.[0]
+    if (!result) throw new Error('Failed to fetch MP4')
+
+    const thumbRes = await fetch(result.thumbnail)
+    const thumbBuffer = await thumbRes.buffer()
+    const catboxUrl = await uploadToCatbox(thumbBuffer)
+
+    res.json({
+      status: true,
+      title: result.title,
+      duration: formatDuration(result.duration),
+      message: 'Video is ready',
+      tourl: catboxUrl,
+      video_url: result.url,
+      creator: 'RijalGanzz'
+    })
+  } catch (e) {
+    res.json({ status: false, message: e.message, creator: 'RijalGanzz' })
+  }
+})
+
+app.listen(PORT, () => {
+  console.log(`Server ready at http://localhost:${PORT}`)
+})
