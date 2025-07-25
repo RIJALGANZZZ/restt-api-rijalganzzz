@@ -1,62 +1,54 @@
+const { getInfo } = require('cnvmp3');
+
 module.exports = function (app) {
-  const fetch = require('node-fetch')
-
-  app.get('/download/ytmp3', async (req, res) => {
-    try {
-      const { query } = req.query
-      if (!query) return res.json({ status: false, message: 'Query is required' })
-
-      const response = await fetch(`https://api.vreden.my.id/api/ytplaymp3?query=${encodeURIComponent(query)}`, {
-        headers: { 'User-Agent': 'Mozilla/5.0' }
-      })
-
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
-
-      const json = await response.json()
-      const meta = json.result.metadata
-      const dl = json.result.download
-
-      res.json({
-        status: true,
-        title: meta.title,
-        creator: meta.author.name,
-        duration: meta.timestamp,
-        thumbnail: meta.thumbnail,
-        type: meta.type,
-        format: 'mp3',
-        quality: dl.quality,
-        download_url: dl.url,
-        filename: dl.filename
-      })
-    } catch (e) {
-      res.status(500).json({ status: false, message: e.message })
+    async function fetchYtMedia(url) {
+        const data = await getInfo(url);
+        return data;
     }
-  })
 
-  app.get('/download/ytmp4', async (req, res) => {
-    try {
-      const { url } = req.query
-      if (!url) return res.json({ status: false, message: 'Url is required' })
+    app.get('/download/ytmp3', async (req, res) => {
+        try {
+            const { url } = req.query;
+            if (!url) return res.status(400).json({ status: false, error: 'Parameter "url" is required' });
 
-      const response = await fetch(`https://zenz.biz.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, {
-        headers: { 'User-Agent': 'Mozilla/5.0' }
-      })
+            const result = await fetchYtMedia(url);
+            const audio = result?.mp3?.[0];
+            if (!audio) return res.status(404).json({ status: false, error: 'MP3 not found' });
 
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`)
-
-      const data = await response.json()
-      res.json({
-        status: true,
-        title: data.title,
-        creator: 'RijalGanzz',
-        duration: data.duration,
-        thumbnail: data.thumbnail,
-        type: data.type,
-        quality: data.quality,
-        download_url: data.download_url
-      })
-    } catch (e) {
-      res.status(500).json({ status: false, message: e.message })
-    }
-  })
+            res.status(200).json({
+                status: true,
+                type: 'mp3',
+                title: result.title,
+                thumbnail: result.thumbnail,
+                quality: audio.quality,
+                size: audio.size,
+                url: audio.url
+            });
+        } catch (error) {
+            res.status(500).json({ status: false, error: error.message });
         }
+    });
+
+    app.get('/download/ytmp4', async (req, res) => {
+        try {
+            const { url } = req.query;
+            if (!url) return res.status(400).json({ status: false, error: 'Parameter "url" is required' });
+
+            const result = await fetchYtMedia(url);
+            const video = result?.mp4?.[0];
+            if (!video) return res.status(404).json({ status: false, error: 'MP4 not found' });
+
+            res.status(200).json({
+                status: true,
+                type: 'mp4',
+                title: result.title,
+                thumbnail: result.thumbnail,
+                quality: video.quality,
+                size: video.size,
+                url: video.url
+            });
+        } catch (error) {
+            res.status(500).json({ status: false, error: error.message });
+        }
+    });
+              }
