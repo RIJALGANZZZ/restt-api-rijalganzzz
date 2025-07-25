@@ -96,6 +96,12 @@
           "desc": "Ambil kumpulan cerita horror",
           "path": "/search/ceritahantu",
           "status": "ready"
+          },
+          {
+          "name": "Stock Grow A Garden
+          "desc": "Melihat Stock Grow A Garden"
+          "path": "/search/growgarden",
+          "status": "ready"
         }
       ]
     },
@@ -227,3 +233,4 @@
     }
   ]
         }
+        
