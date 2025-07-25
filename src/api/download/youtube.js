@@ -1,54 +1,52 @@
-const { getInfo } = require('cnvmp3');
-
 module.exports = function (app) {
-    async function fetchYtMedia(url) {
-        const data = await getInfo(url);
-        return data;
+  const fetch = require('node-fetch')
+  const cheerio = require('cheerio')
+
+  async function y2mateDl(url, type = 'mp3') {
+    const res = await fetch('https://y2mate.nu/en-hq8z/', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'user-agent': 'Mozilla/5.0'
+      },
+      body: new URLSearchParams({ url })
+    })
+
+    const html = await res.text()
+    const $ = cheerio.load(html)
+    const title = $('input[name="title"]').val() || $('title').text()
+    const thumb = $('.video-thumb img').attr('src')
+    let downloadUrl, quality, size
+
+    $('a').each((i, el) => {
+      const text = $(el).text().trim().toLowerCase()
+      if (type === 'mp3' && text.includes('mp3')) downloadUrl = $(el).attr('href')
+      if (type === 'mp4' && text.includes('mp4')) downloadUrl = $(el).attr('href')
+    })
+
+    if (!downloadUrl) throw 'Download link not found'
+    return { status: true, title, thumb, type, downloadUrl }
+  }
+
+  app.get('/download/ytmp3', async (req, res) => {
+    try {
+      const { url } = req.query
+      if (!url) return res.json({ status: false, message: 'Missing url parameter' })
+      const data = await y2mateDl(url, 'mp3')
+      res.json(data)
+    } catch (e) {
+      res.json({ status: false, message: e.message || e })
     }
+  })
 
-    app.get('/download/ytmp3', async (req, res) => {
-        try {
-            const { url } = req.query;
-            if (!url) return res.status(400).json({ status: false, error: 'Parameter "url" is required' });
-
-            const result = await fetchYtMedia(url);
-            const audio = result?.mp3?.[0];
-            if (!audio) return res.status(404).json({ status: false, error: 'MP3 not found' });
-
-            res.status(200).json({
-                status: true,
-                type: 'mp3',
-                title: result.title,
-                thumbnail: result.thumbnail,
-                quality: audio.quality,
-                size: audio.size,
-                url: audio.url
-            });
-        } catch (error) {
-            res.status(500).json({ status: false, error: error.message });
-        }
-    });
-
-    app.get('/download/ytmp4', async (req, res) => {
-        try {
-            const { url } = req.query;
-            if (!url) return res.status(400).json({ status: false, error: 'Parameter "url" is required' });
-
-            const result = await fetchYtMedia(url);
-            const video = result?.mp4?.[0];
-            if (!video) return res.status(404).json({ status: false, error: 'MP4 not found' });
-
-            res.status(200).json({
-                status: true,
-                type: 'mp4',
-                title: result.title,
-                thumbnail: result.thumbnail,
-                quality: video.quality,
-                size: video.size,
-                url: video.url
-            });
-        } catch (error) {
-            res.status(500).json({ status: false, error: error.message });
-        }
-    });
-              }
+  app.get('/download/ytmp4', async (req, res) => {
+    try {
+      const { url } = req.query
+      if (!url) return res.json({ status: false, message: 'Missing url parameter' })
+      const data = await y2mateDl(url, 'mp4')
+      res.json(data)
+    } catch (e) {
+      res.json({ status: false, message: e.message || e })
+    }
+  })
+  }
