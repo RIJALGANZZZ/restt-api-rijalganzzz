@@ -1,52 +1,50 @@
 module.exports = function (app) {
   const fetch = require('node-fetch')
   const cheerio = require('cheerio')
+  const FormData = require('form-data')
 
-  async function y2mateDl(url, type = 'mp3') {
-    const res = await fetch('https://y2mate.nu/en-hq8z/', {
+  async function uploadToCatbox(buffer, filename = 'video.mp4') {
+    const form = new FormData()
+    form.append('reqtype', 'fileupload')
+    form.append('fileToUpload', buffer, filename)
+    const res = await fetch('https://catbox.moe/user/api.php', {
       method: 'POST',
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        'user-agent': 'Mozilla/5.0'
-      },
-      body: new URLSearchParams({ url })
+      body: form
     })
-
-    const html = await res.text()
-    const $ = cheerio.load(html)
-    const title = $('input[name="title"]').val() || $('title').text()
-    const thumb = $('.video-thumb img').attr('src')
-    let downloadUrl, quality, size
-
-    $('a').each((i, el) => {
-      const text = $(el).text().trim().toLowerCase()
-      if (type === 'mp3' && text.includes('mp3')) downloadUrl = $(el).attr('href')
-      if (type === 'mp4' && text.includes('mp4')) downloadUrl = $(el).attr('href')
-    })
-
-    if (!downloadUrl) throw 'Download link not found'
-    return { status: true, title, thumb, type, downloadUrl }
+    if (!res.ok) throw new Error('Catbox upload failed')
+    return await res.text()
   }
 
-  app.get('/download/ytmp3', async (req, res) => {
-    try {
-      const { url } = req.query
-      if (!url) return res.json({ status: false, message: 'Missing url parameter' })
-      const data = await y2mateDl(url, 'mp3')
-      res.json(data)
-    } catch (e) {
-      res.json({ status: false, message: e.message || e })
-    }
-  })
+  async function getMp4LinkFromMp3Juice(url) {
+    const videoId = url.split('v=')[1] || url.split('/').pop().replace('#', '')
+    const target = `https://mp3juice.co/api/ajaxSearch/index?query=${videoId}`
+    const res = await fetch(target, {
+      headers: { 'x-requested-with': 'XMLHttpRequest' }
+    })
+    const json = await res.json()
+    if (!json || !json.length) throw 'Video not found'
+
+    const video = json[0]
+    const html = await fetch(`https://mp3juice.co/api/ajaxFetch/index?id=${video.videoId}&title=${encodeURIComponent(video.title)}`)
+      .then(res => res.text())
+
+    const $ = cheerio.load(html)
+    const mp4 = $('a:contains("MP4 Download")').attr('href')
+    if (!mp4) throw 'MP4 link not found'
+
+    return { title: video.title, thumb: video.thumb, mp4 }
+  }
 
   app.get('/download/ytmp4', async (req, res) => {
     try {
       const { url } = req.query
-      if (!url) return res.json({ status: false, message: 'Missing url parameter' })
-      const data = await y2mateDl(url, 'mp4')
-      res.json(data)
+      if (!url) return res.json({ status: false, message: 'Missing url' })
+      const { title, thumb, mp4 } = await getMp4LinkFromMp3Juice(url)
+      const buffer = await fetch(mp4).then(r => r.buffer())
+      const catboxUrl = await uploadToCatbox(buffer, `${title}.mp4`)
+      res.json({ status: true, title, thumb, catboxUrl })
     } catch (e) {
       res.json({ status: false, message: e.message || e })
     }
   })
-  }
+            }
