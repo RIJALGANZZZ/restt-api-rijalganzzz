@@ -19,27 +19,25 @@ module.exports = function (app) {
         const url = `https://aqul-brat.hf.space/?text=${encodeURIComponent(currentText)}`;
         const response = await axios.get(url, { responseType: 'arraybuffer' });
 
-        if (!response || !response.data) throw new Error('No data received from Aqul API');
-
-        const framePath = path.join(tempDir, `frame${i}.mp4`);
+        const framePath = path.join(tempDir, `frame${i}.png`);
         fs.writeFileSync(framePath, response.data);
         framePaths.push(framePath);
       }
 
-      const fileListPath = path.join(tempDir, 'filelist.txt');
-      let fileListContent = framePaths.map(p => `file '${p}'\nduration 0.5`).join('\n') + `\nfile '${framePaths[framePaths.length - 1]}'\nduration 3`;
-      fs.writeFileSync(fileListPath, fileListContent);
+      const imageListFile = path.join(tempDir, 'images.txt');
+      const content = framePaths.map(f => `file '${f}'\nduration 0.5`).join('\n') + `\nfile '${framePaths.at(-1)}'\nduration 3`;
+      fs.writeFileSync(imageListFile, content);
 
-      const outputVideoPath = path.join(tempDir, 'output.mp4');
-      execSync(`ffmpeg -y -f concat -safe 0 -i ${fileListPath} -vf "fps=30" -c:v libx264 -preset veryfast -pix_fmt yuv420p ${outputVideoPath}`);
+      const outputPath = path.join(tempDir, 'output.mp4');
+      execSync(`ffmpeg -y -f concat -safe 0 -i ${imageListFile} -vf "fps=30,format=yuv420p" ${outputPath}`);
 
-      const videoBuffer = fs.readFileSync(outputVideoPath);
+      const buffer = fs.readFileSync(outputPath);
       res.setHeader('Content-Type', 'video/mp4');
-      res.send(videoBuffer);
+      res.send(buffer);
 
-      framePaths.forEach(p => fs.unlinkSync(p));
-      fs.unlinkSync(fileListPath);
-      fs.unlinkSync(outputVideoPath);
+      framePaths.forEach(f => fs.unlinkSync(f));
+      fs.unlinkSync(imageListFile);
+      fs.unlinkSync(outputPath);
     } catch (e) {
       console.error('❌ ERROR:', e);
       res.status(500).json({ status: false, message: 'Failed to generate brat video', error: e.toString() });
