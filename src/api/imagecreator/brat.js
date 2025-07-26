@@ -6,7 +6,7 @@ module.exports = function (app) {
     if (!text) return res.status(400).json({ status: false, message: 'text parameter is required' });
 
     try {
-      const image = await axios.get(`https://aqul-brat.hf.space/?text=${encodeURIComponent(text)}`, {
+      const image = await axios.get(`https://brat.siputzx.my.id/image?text=${encodeURIComponent(text)}`, {
         responseType: 'arraybuffer'
       });
       res.setHeader('Content-Type', 'image/png');
