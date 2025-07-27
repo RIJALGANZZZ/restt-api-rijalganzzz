@@ -1,6 +1,5 @@
 module.exports = function (app) {
   const fetch = require('node-fetch')
-  const FormData = require('form-data')
 
   function formatDuration(seconds) {
     if (!seconds || isNaN(seconds)) return 'Durasi tidak diketahui'
@@ -9,18 +8,9 @@ module.exports = function (app) {
     return `${mins} menit ${secs} detik`
   }
 
-  async function uploadToCatbox(buffer, filename = 'thumb.jpg') {
-    const form = new FormData()
-    form.append('reqtype', 'fileupload')
-    form.append('fileToUpload', buffer, filename)
-
-    const res = await fetch('https://catbox.moe/user/api.php', {
-      method: 'POST',
-      body: form
-    })
-
-    if (!res.ok) throw new Error('Catbox upload failed')
-    return await res.text()
+  function extractVideoID(url) {
+    const match = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]+)/)
+    return match ? match[1] : null
   }
 
   app.get('/download/ytmp3', async (req, res) => {
@@ -37,17 +27,15 @@ module.exports = function (app) {
       const data = await response.json()
       const title = data.title || 'Judul tidak tersedia'
       const duration = formatDuration(data.duration)
-
-      const thumbRes = await fetch(data.thumbnail)
-      const thumbBuffer = await thumbRes.buffer()
-      const tourl = await uploadToCatbox(thumbBuffer)
+      const videoId = extractVideoID(url)
+      const ytImg = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : data.thumbnail
 
       res.json({
         status: true,
         title,
         duration,
         message: `🎵 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n\n*Sedang Mengirim Audio...*`,
-        tourl,
+        tourl: ytImg,
         audio_url: data.download_url,
         creator: 'RijalGanzz'
       })
@@ -70,10 +58,8 @@ module.exports = function (app) {
       const data = await response.json()
       const title = data.title || 'Judul tidak tersedia'
       const duration = formatDuration(data.duration)
-
-      const thumbRes = await fetch(data.thumbnail)
-      const thumbBuffer = await thumbRes.buffer()
-      const tourl = await uploadToCatbox(thumbBuffer)
+      const videoId = extractVideoID(url)
+      const ytImg = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : data.thumbnail
 
       res.json({
         status: true,
@@ -81,7 +67,7 @@ module.exports = function (app) {
         duration,
         quality: data.quality,
         message: `🎬 *Judul:* ${title}\n⏰ *Durasi:* ${duration}\n📽️ *Kualitas:* ${data.quality}\n\n*Sedang Mengirim Video...*`,
-        tourl,
+        tourl: ytImg,
         video_url: data.download_url,
         creator: 'RijalGanzz'
       })
@@ -89,5 +75,4 @@ module.exports = function (app) {
       res.status(500).json({ status: false, message: e.message })
     }
   })
-                                        }
-        
+                                 }
