@@ -28,8 +28,8 @@ module.exports = function(app) {
           result: {
             status: "success",
             msg: "Manual override",
-            greeting_message: "Saya dibuat oleh RijalGanzz dan saya adalah Elaina.",
-            data: "Saya dibuat oleh RijalGanzz dan saya adalah Elaina.",
+            greeting_message: "Hai kak seperti nya kakak tanya pembuat ku ya? pembuat ku adalahh Rijaganzz dan saya adalah elaina wa owner ku 62882009507703 jangan di spam ya kak",
+            data: "Hai kak seperti nya kakak tanya pembuat ku ya? pembuat ku adalahh Rijaganzz dan saya adalah elaina wa owner ku 62882009507703 jangan di spam ya kak",
             log: false
           }
         });
