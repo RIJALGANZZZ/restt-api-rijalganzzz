@@ -1,112 +1,49 @@
 const axios = require('axios');
 const FormData = require('form-data');
-const { fromBuffer } = require('file-type');
-const qs = require('qs');
 
-const tool = ['removebg', 'enhance', 'upscale', 'restore', 'colorize'];
+async function Upscale(imageUrl) {
+  try {
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    const buffer = response.data;
 
-const pxpic = {
-  upload: async (filePath) => {
-    const buffer = filePath;
-    const { ext, mime } = (await fromBuffer(buffer)) || {};
-    const fileName = Date.now() + "." + ext;
-    const folder = "uploads";
-    const responsej = await axios.post("https://pxpic.com/getSignedUrl", { folder, fileName }, {
-      headers: { "Content-Type": "application/json" },
+    const form = new FormData();
+    form.append('image', buffer, {
+      filename: 'upload.jpg',
+      contentType: 'image/jpeg'
     });
-    const { presignedUrl } = responsej.data;
-    await axios.put(presignedUrl, buffer, {
-      headers: { "Content-Type": mime },
-    });
-    const cdnDomain = "https://files.fotoenhancer.com/uploads/";
-    const sourceFileUrl = cdnDomain + fileName;
-    return sourceFileUrl;
-  },
-  create: async (filePath, tools) => {
-    if (!tool.includes(tools)) {
-      return `Pilih salah satu dari tools ini: ${tool.join(', ')}`;
-    }
-    const url = await pxpic.upload(filePath);
-    let data = qs.stringify({
-      imageUrl: url,
-      targetFormat: 'png',
-      needCompress: 'no',
-      imageQuality: '100',
-      compressLevel: '6',
-      fileOriginalExtension: 'png',
-      aiFunction: tools,
-      upscalingLevel: ''
-    });
-    let config = {
-      method: 'POST',
-      url: 'https://pxpic.com/callAiFunction',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Android 10; Mobile; rv:131.0) Gecko/131.0 Firefox/131.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/svg+xml,*/*;q=0.8',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'accept-language': 'id-ID'
-      },
-      data: data
+    form.append('user_id', 'undefined');
+    form.append('is_public', 'true');
+
+    const headers = {
+      ...form.getHeaders(),
+      'Accept': '*/*',
+      'Origin': 'https://picupscaler.com',
+      'Referer': 'https://picupscaler.com/',
+      'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36'
     };
-    const api = await axios.request(config);
-    return api.data;
+
+    const { data } = await axios.post('https://picupscaler.com/api/generate/handle', form, { headers });
+    return data;
+  } catch (err) {
+    return { error: true, message: err.message };
   }
-};
+}
 
 module.exports = function(app) {
-  app.get('/imagecreator/removebg', async (req, res) => {
-    const { url } = req.query;
-    try {
-      let image = await getBuffer(url);
-      const result = await pxpic.create(image, "removebg");
-      res.status(200).json({
-        status: true,
-        result: result.resultImageUrl
-      });
-    } catch (error) {
-      res.status(500).send(`Error: ${error.message}`);
-    }
-  });
-
   app.get('/imagecreator/hd', async (req, res) => {
     const { url } = req.query;
-    try {
-      let image = await getBuffer(url);
-      const result = await pxpic.create(image, "enhance");
-      res.status(200).json({
-        status: true,
-        result: result.resultImageUrl
-      });
-    } catch (error) {
-      res.status(500).send(`Error: ${error.message}`);
-    }
-  });
+    if (!url) return res.status(400).json({ status: false, message: 'Masukkan parameter ?url=' });
 
-  app.get('/imagecreator/upscale', async (req, res) => {
-    const { url } = req.query;
     try {
-      let image = await getBuffer(url);
-      const result = await pxpic.create(image, "upscale");
-      res.status(200).json({
-        status: true,
-        result: result.resultImageUrl
-      });
-    } catch (error) {
-      res.status(500).send(`Error: ${error.message}`);
-    }
-  });
+      const result = await Upscale(url);
+      if (result.error) throw new Error(result.message);
 
-  app.get('/imagecreator/colorize', async (req, res) => {
-    const { url } = req.query;
-    try {
-      let image = await getBuffer(url);
-      const result = await pxpic.create(image, "colorize");
       res.status(200).json({
         status: true,
-        result: result.resultImageUrl
+        result
       });
-    } catch (error) {
-      res.status(500).send(`Error: ${error.message}`);
+    } catch (err) {
+      res.status(500).json({ status: false, message: err.message });
     }
   });
 };
