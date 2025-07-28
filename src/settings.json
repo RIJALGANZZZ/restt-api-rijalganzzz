@@ -125,6 +125,15 @@
           "params": {
             "text": "Teks yang akan dimasukkan ke dalam video brat"
           }
+        },
+        {
+          "name": "HD",
+          "desc": "Tingkatkan kualitas gambar jadi HD",
+          "status": "ready",
+          "path": "/imagecreator/hd?url=",
+          "params": {
+            "url": "URL gambar yang ingin ditingkatkan ke HD"
+          }
         }
       ]
     },
