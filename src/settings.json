@@ -249,9 +249,18 @@
         },
         {
           "name": "FF Stalk",
-          "desc": "Stalk free fire account",
+          "desc": "Stalk free fire account by ID",
           "status": "ready",
           "path": "/stalk/ff?id="
+        },
+        {
+          "name": "FF Player Search",
+          "desc": "Cari akun Free Fire berdasarkan nickname",
+          "status": "ready",
+          "path": "/stalk/ffplayer?nickname=",
+          "params": {
+            "nickname": "Nickname Free Fire yang ingin dicari"
+          }
         }
       ]
     }
