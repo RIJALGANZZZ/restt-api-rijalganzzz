@@ -102,6 +102,12 @@
           "desc": "Melihat Stock Grow A Garden",
           "path": "/search/growagarden",
           "status": "ready"
+        },
+        {
+          "name": "Blox Fruits Stock",
+          "desc": "Lihat stok Blox Fruits terbaru",
+          "path": "/search/bloxfruit",
+          "status": "ready"
         }
       ]
     },
