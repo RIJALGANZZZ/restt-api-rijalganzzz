@@ -16,7 +16,7 @@ module.exports = function (app) {
 
       const data = await apiRes.json()
 
-      if (!data || !data.data || !data.data.music || !data.data.music_info)
+      if (!data?.data?.music || !data?.data?.music_info)
         return res.status(500).json({ status: false, message: 'Gagal ambil data musik dari TikTok' })
 
       const result = {
@@ -26,9 +26,9 @@ module.exports = function (app) {
         url: `https://www.tikwm.com${data.data.music}`
       }
 
-      res.status(200).json({ status: true, creator: 'api.tok', result })
+      res.status(200).json({ status: true, creator: 'Rijalganzz', result })
     } catch (e) {
       res.status(500).json({ status: false, message: 'Internal error', error: e.message })
     }
   })
-          }
+}
