@@ -199,7 +199,7 @@
         },
         {
           "name": "TikTok Music (MP3)",
-          "desc": "Download audio MP3 dari TikTok via Tikwm",
+          "desc": "Download Tiktok Mp3",
           "status": "ready",
           "path": "/download/ttmusic?url=",
           "params": {
