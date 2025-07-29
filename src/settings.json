@@ -1,6 +1,6 @@
 {
-  "name": "rest api simple jir",
-  "version": "v1.21",
+  "name": "Rest Api Simple By Rijalganzz",
+  "version": "v1.22",
   "description": "Welcome To Rijalganzz Rest Api",
   "bannerImage": "/src/banner.jpg",
   "header": {
@@ -195,6 +195,15 @@
           "path": "/download/facebook?url=",
           "params": {
             "url": "URL video Facebook"
+          }
+        },
+        {
+          "name": "TikTok Music (MP3)",
+          "desc": "Download audio MP3 dari TikTok via Tikwm",
+          "status": "ready",
+          "path": "/download/ttmusic?url=",
+          "params": {
+            "url": "URL video TikTok"
           }
         }
       ]
