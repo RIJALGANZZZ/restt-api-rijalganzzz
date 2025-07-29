@@ -1,7 +1,7 @@
 const axios = require('axios')
 
 module.exports = function (app) {
-  app.get('/search/ffplayer', async (req, res) => {
+  app.get('/stalk/ffplayer', async (req, res) => {
     const { nickname } = req.query
     if (!nickname) return res.status(400).json({ status: false, message: 'Parameter nickname diperlukan' })
 
@@ -14,11 +14,13 @@ module.exports = function (app) {
         }
       })
 
-      if (data.error) return res.status(404).json({ status: false, message: data.error })
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return res.status(404).json({ status: false, message: '❌ Tidak ditemukan atau nickname salah.' })
+      }
 
       const result = data.map((player, index) => ({
         no: index + 1,
-        nickname: player.nickname,
+        nickname: player.nickname.replace(/\n/g, ' ').trim(),
         accountId: player.accountId,
         level: player.level,
         region: player.region,
@@ -35,5 +37,4 @@ module.exports = function (app) {
       res.status(500).json({ status: false, message: 'Internal error', error: e.message })
     }
   })
-                                                }
-                                                  
+  }
